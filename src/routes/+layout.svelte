@@ -6,7 +6,7 @@
     import {authStore} from '$lib/store/store.js';
     import {goto} from '$app/navigation';
 
-    const nonAuthRoutes = ['/']
+    const nonAuthRoutes = ['/', '/auth']
 
     onMount(() => {
         console.log('mounting');
@@ -14,12 +14,12 @@
             const currentPath = window.location.pathname;
 
             if(!user && !nonAuthRoutes.includes(currentPath)){
-                goto('/');
+                goto('/auth');
                 return;
             }
 
-            if(user && currentPath === '/'){
-                window.location.href = '/dashboard';
+            if(user && (currentPath === '/auth' || currentPath === '/')){
+                goto('/app/dashboard')
                 return;
             }
 
@@ -34,6 +34,8 @@
                 console.log('Creating User')
                 const userRef = doc(db, 'users', user.uid);
                 dataToSetToStore ={
+                    username: user.displayName,
+                    profilePic: user.photoURL,
                     email: user.email,
                     notes: []
                 }
@@ -68,8 +70,9 @@
 <style>
     .mainContainer{
         height: 100%;
-        background: linear-gradient(to right, #000428, #000046);
-        color: white;
+        width: 100%;
+        background: var(--light_clr);
+        color: var(--lighter_clr);
         position: relative;
         align-items: center;
         justify-content: center;

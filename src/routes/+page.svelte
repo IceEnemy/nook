@@ -1,5 +1,8 @@
 <script>
-    import Authenticate from '$lib/Authenticate.svelte';
-</script>
-
-<Authenticate/>
+    import { onMount } from 'svelte';
+    import { goto } from '$app/navigation';
+  
+    onMount(() => {
+      goto('/auth');
+    });
+  </script>

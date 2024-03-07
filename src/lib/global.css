@@ -1,7 +1,11 @@
 :root{
-    --prim_clr: navy;
-    --trans_white:rgba(234, 233, 229, 0.5);
-
+    font-size: 16px;
+    font-family:Poppins, sans-serif;
+    --prim_clr: #433633;
+    --sec_clr: #5C5552;
+    --tert_clr: #8F857D;
+    --light_clr: #DECBB7;
+    --lighter_clr:#F7F0F5;
 }
 
 html, body{
@@ -14,5 +18,15 @@ html, body{
     box-sizing: border-box;
     padding: 0;
     margin: 0;
-    font-family: Poppins, sans-serif;
+    /* font-family: Poppins, sans-serif; */
+}
+
+body::-webkit-scrollbar{
+    width: 0.25rem;
+}
+body::-webkit-scrollbar-track{
+    background: var(--bg-primary);
+}
+body::-webkit-scrollbar-thumb{
+    background-color: var(--text-primary);
 }
