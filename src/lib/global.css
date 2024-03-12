@@ -13,12 +13,21 @@ html, body{
     width: 100%;
 }
 
+.imgContainer{
+    border-radius: 100%;
+}
+
 *{
     transition-duration: 200ms;
     box-sizing: border-box;
     padding: 0;
     margin: 0;
     /* font-family: Poppins, sans-serif; */
+}
+
+.verticalLine{
+    border-left: 1px solid var(--sec_clr);
+    height: 100%;
 }
 
 body::-webkit-scrollbar{

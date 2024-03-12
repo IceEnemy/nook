@@ -20,8 +20,9 @@
             return;
         }
     
-        if(!email || !password ||!username || (register && !confirmPassword) ){
+        if(!email || !password ||(register && !username) || (register && !confirmPassword) ){
             error = true;
+            console.log("Error: ");
             return;
         }
 
@@ -37,6 +38,7 @@
                     authenticating = false;
                     return;
                 }
+
                 await authHandlers.signup(email, password, username);
 
             }
@@ -44,6 +46,9 @@
         catch(err){
             console.log("Authenticating Error: ", err);
             error = true;
+            authenticating = false;
+        }
+        finally{
             authenticating = false;
         }
         
@@ -105,6 +110,7 @@
         height: 50%;
         margin: 0 auto;
         /* flex: 1; */
+        color: var(--prim_clr);
     }
     form{
         display: flex;
@@ -142,6 +148,7 @@
     }
     form button{
         background: var(--prim_clr);
+        color: var(--lighter_clr);
         border:none;
         padding: 10px 0;
         border-radius: 5px;

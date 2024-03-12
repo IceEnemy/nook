@@ -2,7 +2,7 @@
     import '$lib/global.css'
     import { onMount } from 'svelte';
     import { auth, db} from '$lib/firebase/firebase.js';
-    import { doc, getDoc, setDoc } from 'firebase/firestore';
+    import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
     import {authStore} from '$lib/store/store.js';
     import {goto} from '$app/navigation';
 
@@ -10,17 +10,18 @@
 
     onMount(() => {
         console.log('mounting');
+        let unsubDoc;
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             const currentPath = window.location.pathname;
 
             if(!user && !nonAuthRoutes.includes(currentPath)){
                 goto('/auth');
-                return;
+                // return;
             }
 
             if(user && (currentPath === '/auth' || currentPath === '/')){
                 goto('/app/dashboard')
-                return;
+                // return;
             }
 
             if(!user){
@@ -29,37 +30,55 @@
 
             let dataToSetToStore;
             const docRef = doc(db, 'users', user.uid);
-            const docSnap = await getDoc(docRef);
-            if(!docSnap.exists()){
-                console.log('Creating User')
-                const userRef = doc(db, 'users', user.uid);
-                dataToSetToStore ={
-                    username: user.displayName,
-                    profilePic: user.photoURL,
-                    email: user.email,
-                    notes: []
-                }
-                await setDoc(
-                    userRef,
-                    dataToSetToStore,
-                    { merge: true }
-                )
-            }
-            else{
-                console.log('Fetching user')
-                const data = docSnap.data();
-                dataToSetToStore = data;
-            }
-            authStore.update((curr) => {
-                return {
-                    ...curr,
-                    user,
-                    data: dataToSetToStore,
-                    loading: false
+            unsubDoc = onSnapshot(docRef, (docSnap) => {
+                if(docSnap.exists()){
+                    console.log('Fetching user')
+                    const data = docSnap.data();
+                    dataToSetToStore = data;
+                    authStore.update((curr) => {
+                        return {
+                            ...curr,
+                            user,
+                            data: dataToSetToStore,
+                            loading: false
+                        }
+                    })
                 }
             })
+            // const docSnap = await getDoc(docRef);
+            // if(!docSnap.exists()){
+            //     console.log('Creating User')
+            //     const userRef = doc(db, 'users', user.uid);
+            //     dataToSetToStore ={
+            //         username: user.displayName,
+            //         profilePic: user.photoURL,
+            //         email: user.email,
+            //         notes: []
+            //     }
+            //     await setDoc(
+            //         userRef,
+            //         dataToSetToStore,
+            //         { merge: true }
+            //     )
+            // }
+            // else{
+            //     console.log('Fetching user')
+            //     const data = docSnap.data();
+            //     dataToSetToStore = data;
+            // }
+            // authStore.update((curr) => {
+            //     return {
+            //         ...curr,
+            //         user,
+            //         data: dataToSetToStore,
+            //         loading: false
+            //     }
+            // })
         });
-        return unsubscribe;
+        return () => {
+            unsubscribe();
+            if (unsubDoc) unsubDoc();
+        }
     });
 </script>
 

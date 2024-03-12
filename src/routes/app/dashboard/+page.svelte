@@ -1,28 +1,11 @@
 <script>
-    import {onMount, setContext} from 'svelte';
-    import {authHandlers} from '$lib/store/store';
+    import {onMount, getContext} from 'svelte';
+    import {authHandlers, authStore} from '$lib/store/store';
     import {auth}  from '$lib/firebase/firebase.js';
 
 
-    let username = '';
-    let profilePic = '';
-    onMount(() => {
-        const unsubscribe = auth.onAuthStateChanged((user) => {
-            if (user) {
-                // User is signed in, access displayName here
-                username = user.displayName || 'Fallback Username';
-                profilePic = user.photoURL || 'https://via.placeholder.com/150';
-                // Navigate or perform actions as needed
-            } else {
-                // User is signed out
-                goto('/auth');
-            }
-        });
-
-        // setContext('userInfo', {username, profilePic})
-
-        return () => unsubscribe();
-    });
+    $: username = $authStore.data?.username || 'Loading..';
+    $: profilePic = $authStore.data?.profilePic || 'https://via.placeholder.com/150';
     
 </script>
 
