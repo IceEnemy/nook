@@ -90,12 +90,12 @@
     .mainContainer{
         height: 100%;
         width: 100%;
-        background: var(--light_clr);
+        background: var(--text_high_contrast);
         color: var(--lighter_clr);
         position: relative;
         align-items: center;
         justify-content: center;
         display: flex;
-        flex-direction: column;
+        /* flex-direction: column; */
     }
 </style>

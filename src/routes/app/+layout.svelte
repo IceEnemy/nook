@@ -1,17 +1,23 @@
 <script>
-    import {onMount, setContext} from 'svelte';
-    import {authHandlers} from '$lib/store/store';
+    import {onMount, setContext, onDestroy} from 'svelte';
+    import {page} from '$app/stores';
+    import {authHandlers, showModal} from '$lib/store/store';
     import {auth}  from '$lib/firebase/firebase.js';
     import Navbar from '$lib/Navbar.svelte';
-    import { showModal } from '$lib/store/store.js';
     import {fade, scale} from 'svelte/transition';
     import {authStore, uploadProfilePicture} from '$lib/store/store.js';
 
-    // let showAcc = true;
+    let unsubscribe;
 
-    // let username = '';
+    onMount(() => {
+        unsubscribe = page.subscribe(() => {
+            showModal.set(false);
+        });
+    });
 
-    console.log(showModal);
+    onDestroy(() => {
+        if (unsubscribe) unsubscribe();
+    });
 
     $: username = $authStore.data?.username || 'Loading..';
     $: profilePic = $authStore.data?.profilePic || 'https://via.placeholder.com/150';
@@ -117,8 +123,9 @@
     .imgContainer{
         width: 100px;
         height: 100px;
-        border-radius: 50%;
+        /* border-radius: 50%; */
         object-fit: cover;
+        /* box-sizing: border-box; */
     }
 
     input[type="radio"] {
@@ -145,13 +152,18 @@
     }
 
     .accDetails label{
-        display: inline-block;
-        background-color: var(--light_clr);
-        /* padding: 10px;
-        margin: 5px; */
-        border-radius: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        width: 100px; /* Match the imgContainer's size */
+        height: 100px; /* Match the imgContainer's size */
+        border-radius: 100%; /* Inherit border-radius for a circular shape */
         cursor: pointer;
-        /* Additional styling as needed */
+    /* Ensure box sizing includes padding and border */
+        box-sizing: border-box;
+    /* Optional: adjust positioning if necessary */
+        position: relative;
     }
 
     button {

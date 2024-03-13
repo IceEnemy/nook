@@ -6,6 +6,21 @@
     --tert_clr: #8F857D;
     --light_clr: #DECBB7;
     --lighter_clr:#F7F0F5;
+
+    --app_bg: #FEFDFC;
+    --subtle_app_bg: #FCF9F6;
+    --comp_default:#F6EEE7;
+    --comp_hover: #F0E4D9;
+    --comp_active:#EBDACA;
+    --border_non_interactive:#E4CDB7;
+    --border_interactive_default:#DCBC9F;
+    --border_interactive_hover:#CEA37E;
+    --solid_bg:#AD7F58;
+    --solid_bg_hover:#A07553;
+    --text_low_contrast:#815E46;
+    --text_high_contrast:#3E332E;
+    --navbar_bg:#493C36;
+    --navbar_contrast_text:#B0E64C;
 }
 
 html, body{
