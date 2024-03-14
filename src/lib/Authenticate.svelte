@@ -1,10 +1,12 @@
 <script>
     import '$lib/global.css'
+    import '$lib/auth.css'
 	import { authHandlers } from './store/store';
     import { slide, fade } from 'svelte/transition';
     import { cubicOut } from 'svelte/easing';
     import { flip } from 'svelte/animate';
     import NookLogo from '$lib/assets/NookLogo.svelte'
+    
 
     let username = '';
     let email = '';
@@ -15,7 +17,6 @@
     let error = false;
     let secondStep = false;
     let slid = false;
-    let anim = false;
     let register = false;
     let authenticating = false;
 
@@ -54,7 +55,7 @@
                     return;
                 }
 
-                await authHandlers.signup(email, password, username);
+                await authHandlers.signup(email, password, username, DOB, phoneNumber);
 
             }
         }
@@ -75,6 +76,10 @@
         if(!slid){
             secondStep = false;
         }
+    }
+    function openForgotPassword() {
+        const url = '/forgotPassword';
+        window.open(url, '_blank');
     }
 </script>
 <div class="authContainer">
@@ -129,8 +134,22 @@
             {/if}
         </div>
         
-        <div class='checks {anim ? 'resize' : ''}'>
-            
+        <div class='checks'>
+            <!--remember me checkbox-->
+            {#if !register || slid}
+                <div class="rmbMeContainer" transition:fade ={{duration:500, easing:cubicOut}}>
+                    <input type="checkbox" />
+                    {#if register}
+                        <span>Agree to <button class="clickableText">Terms of Service</button></span>
+                    {:else}
+                        <span>Remember Me</span>
+                    {/if}
+                </div>
+            {/if}
+
+            {#if !register}
+                <button type="button" class='clickableText' transition:fade ={{duration:500, easing:cubicOut}} on:click={openForgotPassword}>Forgot Password?</button>
+            {/if}
         </div>
         
         <button type="button" on:click={handleAuthenticate}>
@@ -161,6 +180,16 @@
 
 </div>
 <style>
+    .rmbMeContainer{
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+        color: var(--text_low_contrast);
+    }
+    .rmbMeContainer input[type="checkbox"] {
+        accent-color: var(--text_low_contrast);
+    }
     .swipeInputs{
         display: flex;
         /* flex-wrap:hidden; */
@@ -184,7 +213,9 @@
 
     .checks{
         display: flex;
-        height: 2rem;
+        height: 3rem;
+        align-items: center;
+        justify-content: space-between;
     }
     .switchText, .clickableText {
         display: inline; 
@@ -287,7 +318,6 @@
         cursor: pointer;
         display: grid;
         place-items: center;
-        /* transition: gap 300ms ease-out; */
     }
 
     /* form button:hover{

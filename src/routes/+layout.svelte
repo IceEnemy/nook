@@ -6,7 +6,7 @@
     import {authStore} from '$lib/store/store.js';
     import {goto} from '$app/navigation';
 
-    const nonAuthRoutes = ['/', '/auth']
+    const nonAuthRoutes = ['/', '/auth','/forgotPassword']
 
     onMount(() => {
         console.log('mounting');

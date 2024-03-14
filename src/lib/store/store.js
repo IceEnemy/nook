@@ -35,7 +35,7 @@ export async function uploadProfilePicture(file) {
 }
 
 export const authHandlers = {
-    signup: async (email, pass, username) => {
+    signup: async (email, pass, username, DOB, phoneNumber) => {
         try {
             
             try{
@@ -62,6 +62,8 @@ export const authHandlers = {
                 username,
                 profilePic: 'https://placebear.com/250/250',                    
                 email,
+                DOB,
+                phoneNumber,
                 notes: []
             }
             await setDoc(
@@ -85,6 +87,9 @@ export const authHandlers = {
     },
     logout: async () => {
         await signOut(auth);
+    },
+    forgetPassword: async (email) => {
+        await sendPasswordResetEmail(auth, email);
     }
 }
 
