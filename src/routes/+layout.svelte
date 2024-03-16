@@ -6,20 +6,22 @@
     import {authStore} from '$lib/store/store.js';
     import {goto} from '$app/navigation';
 
-    const nonAuthRoutes = ['/', '/auth','/forgotPassword']
+    //defines the pages that the user can access if they are not logged in
+    const nonAuthRoutes = ['/', '/auth/access', '/auth/forgotPassword']
 
     onMount(() => {
         console.log('mounting');
         let unsubDoc;
+        //onAuthStateChanged is a listener that listens for changes in the user's authentication state
         const unsubscribe = auth.onAuthStateChanged(async (user) => {
             const currentPath = window.location.pathname;
 
             if(!user && !nonAuthRoutes.includes(currentPath)){
-                goto('/auth');
+                goto('/auth/access');
                 // return;
             }
 
-            if(user && (currentPath === '/auth' || currentPath === '/')){
+            if(user && (currentPath === '/auth/access' || currentPath === '/')){
                 goto('/app/dashboard')
                 // return;
             }
@@ -27,7 +29,7 @@
             if(!user){
                 return;
             }
-
+            //if the user is logged in, then we will fetch the user's data from the firestore and update the authStore
             let dataToSetToStore;
             const docRef = doc(db, 'users', user.uid);
             unsubDoc = onSnapshot(docRef, (docSnap) => {

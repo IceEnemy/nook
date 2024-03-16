@@ -7,12 +7,10 @@
     import OptionButton from '$lib/assets/OptionButton.svelte'
     import NookLogo from '$lib/assets/NookLogo.svelte'
 
+    //if authStore is changed, then these variables will dynamically update
     $: username = $authStore.data?.username || 'Loading..';
     $: profilePic = $authStore.data?.profilePic || 'https://via.placeholder.com/150';
 
-    function showAcc(){
-        showModal.set(true);
-    }
 </script>
 
 <nav class="navbar">

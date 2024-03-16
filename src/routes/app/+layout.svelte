@@ -1,5 +1,5 @@
 <script>
-    import {onMount, setContext, onDestroy} from 'svelte';
+    import {onMount, onDestroy} from 'svelte';
     import {page} from '$app/stores';
     import {authHandlers, showModal} from '$lib/store/store';
     import {auth}  from '$lib/firebase/firebase.js';
@@ -112,6 +112,11 @@
 
 
 <style>
+    /* h1{
+        font-size: 2rem;
+        text-align: left;
+    } */
+
     main{
         padding: 1rem;
         margin-left: 18rem;
@@ -223,6 +228,8 @@
 
         width: 100%;
         height: 8rem;
+        /* text-align: left; */
+        /* justify-content: left; */
 
         /* background: var(--prim_clr); */
     }

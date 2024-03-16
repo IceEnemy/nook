@@ -1,6 +1,5 @@
 <script>
     import '$lib/global.css'
-    import '$lib/auth.css'
 	import { authHandlers } from './store/store';
     import { slide, fade } from 'svelte/transition';
     import { cubicOut } from 'svelte/easing';
@@ -15,33 +14,125 @@
     let DOB = '';
     let phoneNumber = '';
     let error = false;
+    let errormsg = '';
+    //second step is a check of whether or not the user is on the second step of the registration process
     let secondStep = false;
+    //slid is a check of whether or not the user has slid to the second step of the registration process
     let slid = false;
+    //register is a check of whether or not the user is registering or signing in
     let register = false;
+    //authenticating is a check of whether or not the user is currently authenticating (more like loading)
     let authenticating = false;
+
+    let isPasswordFocused = false;
+
+    function handlePassFocus(){
+        if(register){
+            isPasswordFocused = true;
+        }
+    }
+
+    function handlePassBlur(){
+        if(register){
+            isPasswordFocused = false;
+        }
+    }
 
     function passwordRequirements(password){
         // password needs to be atleast 8 letters long, contain atleast 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&.])[A-Za-z\d@$!%*?&.]{8,}$/;
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d\s])[A-Za-z\d\S]{8,}$/;
         return passwordRegex.test(password);
     }
 
+    function passwordLength(password){
+        return password.length >= 8;
+    }
+
+    function passwordUppercase(password){
+        const passwordRegex = /^(?=.*[A-Z])/;
+        return passwordRegex.test(password);
+    }
+
+    function passwordLowercase(password){
+        const passwordRegex = /^(?=.*[a-z])/;
+        return passwordRegex.test(password);
+    }
+
+    function passwordNumber(password){
+        const passwordRegex = /^(?=.*\d)/;
+        return passwordRegex.test(password);
+    }
+
+    function passwordSpecial(password){
+        const passwordRegex = /^(?=.*[^A-Za-z\d\s])/;
+        return passwordRegex.test(password);
+    }
+
+    $: passwordLengthCheck = passwordLength(password);
+    $: passwordUppercaseCheck = passwordUppercase(password);
+    $: passwordLowercaseCheck = passwordLowercase(password);
+    $: passwordNumberCheck = passwordNumber(password);
+    $: passwordSpecialCheck = passwordSpecial(password);
+
     async function handleAuthenticate(){
+
+        //if the user is currently loading, button will not work
+        if(authenticating){
+            return;
+        }
+    
+        //if the button is 'Next', the user will be directed to the second step of the registration process
+        const emailRegex = /^(?=[a-zA-Z0-9@.]{6,254}$)[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if(!emailRegex.test(email)){
+            error = true;
+            errormsg = "Please enter a valid email address.";
+            return;
+        }
+
+        if(!password){
+            error = true;
+            errormsg = "Please enter a password.";
+            return;
+        }
+
+        if(register){
+            if(!passwordRequirements(password)){
+                error = true;
+                errormsg = "Password does not meet the requirements.";
+                return;
+            }
+            else if(password !== confirmPassword){
+                error = true;
+                errormsg = "Passwords do not match.";
+                return;
+            }
+            else if(secondStep){
+                if(!username){
+                    error = true;
+                    errormsg = "Please enter a username.";
+                    return;
+                }
+                else if(!DOB){
+                    error = true;
+                    errormsg = "Please enter your date of birth.";
+                    return;
+                }
+            }
+            
+        }
+
+
         if(register && !slid){
             secondStep = true;
             slid = true;
             return;
         }
-        if(authenticating){
-            return;
-        }
-    
-        if(!email || !password ||(register && !username) || (register && !confirmPassword) ){
-            error = true;
-            console.log("Error: ");
-            return;
-        }
 
+        error = false;
+        
+        //Error function, might need to be updated to allow for more specific error messages
+
+        //set the loading state to true
         authenticating = true;
 
         try{
@@ -62,7 +153,7 @@
         catch(err){
             console.log("Authenticating Error: ", err);
             error = true;
-            authenticating = false;
+            errormsg = err.message;
         }
         finally{
             authenticating = false;
@@ -70,15 +161,18 @@
         
     }
 
+    //to determine the swipe direction of the animation of the auth form
     $: swipeClass = slid ? 'swipeLeft' : 'swipeRight';
 
+    //to unload the secondStep after the animation has finished
     function handleSecondStepRemove(){
         if(!slid){
             secondStep = false;
         }
     }
+    //opens the forgot password page in a new window
     function openForgotPassword() {
-        const url = '/forgotPassword';
+        const url = '/auth/forgotPassword';
         window.open(url, '_blank');
     }
 </script>
@@ -87,7 +181,7 @@
         <NookLogo color='var(--text_high_contrast)' width=160/>
         <h1>{register? 'SIGN UP' : 'SIGN IN'}</h1>
         {#if error}
-            <p transition:slide={{duration: 500, easing: cubicOut}} class="error">Information Entered not correct!</p>
+            <p transition:slide={{duration: 500, easing: cubicOut}} class="error">{errormsg}</p>
         {/if} 
     </div>
     
@@ -106,7 +200,7 @@
                 </label>
                 <label>
                     <p class={password ? 'above' : 'center'}>Password</p>
-                    <input type="password" placeholder="Password" bind:value={password}>
+                    <input type="password" placeholder="Password" bind:value={password} on:focus={handlePassFocus} on:blur={handlePassBlur}>
                 </label>
                 {#if register}
                 <label transition:slide={{duration: 500, easing: cubicOut}}>
@@ -128,7 +222,7 @@
                     </label>
                     <label>
                         <p class={phoneNumber ? 'above' : 'center'}>Phone Number</p>
-                        <input type="tel" placeholder="Phone Number" bind:value={phoneNumber}>
+                        <input type="tel" placeholder="Phone Number (Optional)" bind:value={phoneNumber}>
                     </label>
                 </div>
             {/if}
@@ -154,7 +248,7 @@
         
         <button type="button" on:click={handleAuthenticate}>
             {#if authenticating}
-            <i class="fa-solid fa-spinner spin"></i>
+                <i class="fa-solid fa-spinner spin"></i>
             {:else}
                 {#if register && !slid}
                 Next
@@ -173,13 +267,126 @@
             <span class='switchText'>Don't have an account? <button type="button" class='clickableText' on:click={() => {register = true; error=false}}>Sign Up</button></span>
         {/if}
     </form>
-    
+    {#if isPasswordFocused}
+        <div class="reqPopup">
+            <h2>Password Requirements</h2>
+            <div class="reqCheck">
+                <div class="reqCheckmark">
+                    {#if passwordLengthCheck}
+                        <i class="fa-solid fa-check"></i>
+                    {:else}
+                        <i class="fa-solid fa-xmark"></i>
+                    {/if}
+                </div>
+                <p class={passwordLengthCheck ? 'reqSatisfied' : 'reqNotMet'}>8 characters long</p>
+            </div>
+            <div class="reqCheck">
+                <div class="reqCheckmark">
+                    {#if passwordUppercaseCheck}
+                        <i class="fa-solid fa-check"></i>
+                    {:else}
+                        <i class="fa-solid fa-xmark"></i>
+                    {/if}
+                </div>
+                <p class = {passwordUppercaseCheck ? 'reqSatisfied' : 'reqNotMet'}>Have at least 1 uppercase character</p>
+            </div>
+            <div class="reqCheck">
+                <div class="reqCheckmark">
+                    {#if passwordLowercaseCheck}
+                        <i class="fa-solid fa-check"></i>
+                    {:else}
+                        <i class="fa-solid fa-xmark"></i>
+                    {/if}
+                </div>
+                <p class = {passwordLowercaseCheck ? 'reqSatisfied' : 'reqNotMet'}>Have at least 1 lowercase character</p>
+            </div>
+            <div class="reqCheck">
+                <div class="reqCheckmark">
+                    {#if passwordNumberCheck}
+                        <i class="fa-solid fa-check"></i>
+                    {:else}
+                        <i class="fa-solid fa-xmark"></i>
+                    {/if}
+                </div>
+                <p class = {passwordNumberCheck ? 'reqSatisfied' : 'reqNotMet'}>Have at least 1 number</p>
+            </div>
+            <div class="reqCheck">
+                <div class="reqCheckmark">
+                    {#if passwordSpecialCheck}
+                        <i class="fa-solid fa-check"></i>
+                    {:else}
+                        <i class="fa-solid fa-xmark"></i>
+                    {/if}
+                </div>
+                <p class = {passwordSpecialCheck ? 'reqSatisfied' : 'reqNotMet'}>Have at least 1 special character</p>
+            </div>
+        </div>
+    {/if}
+
 
 </div>
+
 <div class="authImage">
 
 </div>
 <style>
+    .reqSatisfied, .reqNotMet{
+        padding: 2px;
+        border-radius: 5px;
+        /* display: grid; */
+        place-items: center;
+    }
+    .reqSatisfied{
+        background-color: var(--navbar_contrast_text_transparent);
+    }
+    .reqNotMet{
+        background-color: var(--error_transparent);
+        /* color: var(--app_bg); */
+    }
+    .fa-check{
+        color: var(--navbar_contrast_text)
+    }
+    .fa-xmark{
+        color: var(--error);
+    }
+    .reqCheck{
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    /* .reqCheckmark{
+        border: 1px solid var(--text_high_contrast);
+        border-radius: 100%;
+    } */
+    .reqPopup{
+        position: absolute;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 1rem;
+        /* position: relative; */
+        /* left: 50%; */
+        transform: translate(115%, 105%);
+        width: 350px;
+        height: 250px;
+        border-radius: 10px;
+        box-shadow: 0 0 5px 3px rgba(0,0,0,0.1);
+        background-color: var(--app_bg);
+        z-index: 10;
+        padding: 1rem;
+    }
+    .reqPopup::after {
+        content: '';
+        position: absolute;
+        transform: rotate(45deg);
+        left: -10px;
+        top: 43.5%;
+        width: 20px; /* Tail width */
+        height: 20px; /* Tail height */
+        background-color: var(--app_bg); /* Tail color, match the reqPopup's background */
+        box-shadow: -3px 3px 5px 0 rgba(0,0,0,0.1);
+        z-index: 9;
+    }
     .rmbMeContainer{
         display: flex;
         align-items: center;
@@ -207,7 +414,7 @@
         display: flex;
         flex-direction: column;
         align-items: center;
-        gap: 2rem;
+        gap: 1rem;
         margin: 4rem 0 2rem 0;
     }
 
@@ -307,6 +514,10 @@
     h1 {
         text-align: center;
         font-size: 4rem;
+    }
+    h2{
+        text-align: center;
+        font-size: 1.5rem;
     }
     form button{
         background: var(--text_high_contrast);

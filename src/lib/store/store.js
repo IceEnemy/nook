@@ -5,12 +5,14 @@ import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage
 import { doc, setDoc } from 'firebase/firestore';
 import { set } from 'firebase/database';
 
+//Store to keep track of the user's data, whenever the database is updated, update the store as well.
 export const authStore = writable({
     user: null,
     loading: true,
     data: {}
 })
 
+//Self explanatory, this is just a function to upload a profile picture to the firebase storage, then take its URL to update user's firestore data.
 export async function uploadProfilePicture(file) {
     if (!file) {
         throw new Error("No file provided for upload");
@@ -34,27 +36,14 @@ export async function uploadProfilePicture(file) {
 
 }
 
+//stores all functions relating to authentication, such as signup, login, logout, and forget password. the names of the functions are self explanatory.
 export const authHandlers = {
     signup: async (email, pass, username, DOB, phoneNumber) => {
-        try {
-            
-            try{
-                const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
-            } 
-            catch (error) {
-                if (error.code === 'auth/email-already-in-use') {
-                    alert('That email address is already in use!');
-                    throw new Error('That email address is already in use!');
-                }
-                else{
-                    console.error("Signup error: ", error);
-                    throw new Error('Signup error: ' + error);
-                }
-                
-            }
-            const user = auth.currentUser;
-            console.log('User: ', user);
 
+        try{
+            const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
+
+            const user = auth.currentUser;
             let dataToSetToStore;
             console.log('Creating User')
             const userRef = doc(db, 'users', user.uid);
@@ -71,19 +60,47 @@ export const authHandlers = {
                 dataToSetToStore,
                 { merge: true }
             )
+        } 
+        catch (error) {
+            let errorMessage = "Signup error: An unexpected error occurred.";
+            if (error.code === 'auth/email-already-in-use') {
+                errorMessage = 'That email address is already in use!';
+            }
+            if (error.code === 'auth/invalid-email') {
+                errorMessage = 'That email address is invalid!';
+            }
+            
+            throw new Error(errorMessage);
+        }
+            
+            // console.log('User: ', user);
+
+            // Create user in firestore
+
+            
 
             // Wait for profile update to complete before continuing
-
-            
-            
-            // await updateProfile(userCredential.user, {displayName: username, photoURL: 'https://placebear.com/250/250'});
-            // Now the profile is updated, you can handle redirection or further actions here
-        } catch (error) {
-            console.error("Signup error: ", error);
-        }
     },
     login: async (email, pass) => {
-        await signInWithEmailAndPassword(auth,email,pass)
+        try{
+            await signInWithEmailAndPassword(auth,email,pass)
+        }
+        catch (error) {
+            console.log('Error: ', error);
+            let errorMessage = "Login error: An unexpected error occurred.";
+            if (error.code === 'auth/user-not-found') {
+                errorMessage = 'User doesn\'t exist!';
+            }
+            else if (error.code === 'auth/invalid-credential') {
+                errorMessage = 'Those credentials are invalid!';
+            }
+            else if (error.code === 'auth/wrong-password') {
+                errorMessage = 'The password is incorrect!';
+            }
+            
+            throw new Error(errorMessage);
+        }
+        
     },
     logout: async () => {
         await signOut(auth);
@@ -93,6 +110,5 @@ export const authHandlers = {
     }
 }
 
+//store to keep track of the modal state, whether it is open or closed. note: modal is the user settings popup
 export const showModal = writable(false);
-
-// 'https://placebear.com/250/250'

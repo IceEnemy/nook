@@ -1,7 +1,7 @@
 <script>
-    import {onMount, getContext} from 'svelte';
+    // import {onMount, getContext} from 'svelte';
     import {authHandlers, authStore} from '$lib/store/store';
-    import {auth}  from '$lib/firebase/firebase.js';
+    // import {auth}  from '$lib/firebase/firebase.js';
 
 
     $: username = $authStore.data?.username || 'Loading..';

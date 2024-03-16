@@ -21,6 +21,10 @@
     --text_high_contrast:#3E332E;
     --navbar_bg:#493C36;
     --navbar_contrast_text:#B0E64C;
+    --navbar_contrast_text_transparent:rgba(176, 230, 76, 0.5);
+
+    --error:coral;
+    --error_transparent:rgba(255, 127, 80, 0.5);
 }
 
 html, body{

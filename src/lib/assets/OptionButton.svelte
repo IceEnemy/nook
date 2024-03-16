@@ -2,6 +2,7 @@
     import '$lib/global.css'
     import {showModal} from '$lib/store/store.js';
     
+    //shows the modal
     function showAcc(){
         showModal.set(true);
     } 
