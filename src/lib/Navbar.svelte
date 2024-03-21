@@ -44,7 +44,7 @@
         padding-left:2rem;
         padding-top: 3rem;
         position:fixed;
-        background-color: var(--sec_clr);
+        background-color: var(--navbar_bg);
         box-sizing: border-box;
         display: flex;
         flex-direction: column;
@@ -56,7 +56,7 @@
         left: 0; /* Align to the left edge of navbar */
         width: 100%; /* Ensure it spans the full width of navbar */
         padding: 1rem; /* Apply padding here, adjust as needed */
-        background-color: var(--prim_clr);
+        background-color: var(--navbar_bg_darker);
         box-sizing: border-box; /* Ensures padding is included in the element's size */
         height:4rem;
         display: flex;

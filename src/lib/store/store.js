@@ -18,6 +18,8 @@ export async function uploadProfilePicture(file) {
         throw new Error("No file provided for upload");
     }
 
+    console.log('Uploading file!');
+
     
 
     const uid = auth.currentUser.uid;
@@ -31,6 +33,22 @@ export async function uploadProfilePicture(file) {
     await setDoc(
         userRef,
         {profilePic: photoURL},
+        {merge: true}
+    );
+
+}
+
+export async function updateProfileData(username, DOB, phoneNumber) {
+    // if(auth.currentUser === null){
+    //     throw new Error('User not logged in');
+    //     return;
+    // }
+    const uid = auth.currentUser.uid;
+    // console.log('Updating profile data');
+    const userRef = doc(db, 'users', uid);
+    await setDoc(
+        userRef,
+        {username, DOB, phoneNumber},
         {merge: true}
     );
 
@@ -107,6 +125,13 @@ export const authHandlers = {
     },
     forgetPassword: async (email) => {
         await sendPasswordResetEmail(auth, email);
+    },
+    deleteAccount: async () => {
+        const user = auth.currentUser;
+        await db.collection('users').doc(user.uid).delete();
+        const fileRef = storageRef(storage, `profilePics/${user.uid}`);
+        await fileRef.delete();
+        await user.delete();
     }
 }
 

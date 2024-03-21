@@ -366,7 +366,7 @@
         gap: 1rem;
         /* position: relative; */
         /* left: 50%; */
-        transform: translate(115%, 105%);
+        transform: translate(115%, 100%);
         width: 350px;
         height: 250px;
         border-radius: 10px;
@@ -500,6 +500,7 @@
         background : transparent;
         color: var(--text_high_contrast);
         font-size: 1rem;
+        font-family:Poppins, sans-serif;
         padding: 1rem;
     }
 
@@ -557,7 +558,7 @@
         opacity:0;
     }
     .error{
-        color: coral;
+        color: var(--error);
         font-size:0.9rem;
     }
     .spin{

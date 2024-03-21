@@ -19,12 +19,27 @@
     --solid_bg_hover:#A07553;
     --text_low_contrast:#815E46;
     --text_high_contrast:#3E332E;
+    --light_text_high_contrast:#F6EEE7;
+    --light_text_low_contrast:#9E9895;
+
     --navbar_bg:#493C36;
+    --navbar_bg_darker:#3F3330;
     --navbar_contrast_text:#B0E64C;
     --navbar_contrast_text_transparent:rgba(176, 230, 76, 0.5);
 
-    --error:coral;
-    --error_transparent:rgba(255, 127, 80, 0.5);
+    --error:#FD4040;
+    --error_transparent:rgba(253, 64, 64, 0.5);
+}
+
+button{
+    font-size: 1rem;
+    font-family:Poppins, sans-serif;
+}
+
+input{
+    font-size: 1rem;
+    font-family:Poppins, sans-serif;
+
 }
 
 html, body{

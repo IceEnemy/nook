@@ -1,7 +1,7 @@
 <script>
     import {onMount, onDestroy} from 'svelte';
     import {page} from '$app/stores';
-    import {authHandlers, showModal} from '$lib/store/store';
+    import {authHandlers, showModal, updateProfileData} from '$lib/store/store';
     import {auth}  from '$lib/firebase/firebase.js';
     import Navbar from '$lib/Navbar.svelte';
     import {fade, scale} from 'svelte/transition';
@@ -11,7 +11,7 @@
 
     onMount(() => {
         unsubscribe = page.subscribe(() => {
-            showModal.set(false);
+            showModal.set(true);
         });
     });
 
@@ -21,6 +21,16 @@
 
     $: username = $authStore.data?.username || 'Loading..';
     $: profilePic = $authStore.data?.profilePic || 'https://via.placeholder.com/150';
+    $: phoneNumber = $authStore.data?.phoneNumber || 'Add Phone Number';
+    $: DOB = $authStore.data?.DOB || 'Loading..';
+    $: email = $authStore.data?.email || 'Loading..';
+
+    let usernameInput;
+    let DOBInput;
+    let phoneNumberInput;
+
+    // console.log(username, DOB, phoneNumber);
+
     // let username = '';
     // let profilePic = '';
     let accSelect = 'Account'
@@ -40,6 +50,12 @@
         await uploadProfilePicture(file);
     }
 
+    async function saveChanges(){
+        // if(!isChanged) return;
+        await updateProfileData(usernameInput, DOBInput, phoneNumberInput);
+        dataGot = false;
+    }
+
     function escAcc(event){
         if(event.key === "Escape"){
             showModal.set(false);
@@ -49,6 +65,20 @@
     function closeAcc(){
         showModal.set(false);
     }
+
+    $: isChanged = usernameInput !== username || DOBInput !== DOB || phoneNumberInput !== phoneNumber;
+
+    let dataGot = false;
+
+    $: {
+        if ($authStore.data.username !== undefined && $authStore.data.DOB !== undefined && !dataGot) {
+        usernameInput = $authStore.data.username;
+        DOBInput = $authStore.data.DOB;
+        phoneNumberInput = $authStore.data.phoneNumber;
+        // console.log(usernameInput, DOBInput, phoneNumberInput);
+        dataGot = true;
+    }}
+
     
 </script>
 
@@ -61,48 +91,84 @@
                 <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <!-- svelte-ignore a11y-no-static-element-interactions -->
                 <div transition:scale={{ start:0.8, end:1,duration: 200}} class = "accountSettings" on:click|stopPropagation>
-                    <div class="SettingsTitle">
-                        <h1>Settings</h1>
-                        <p>Manage your account settings</p>
-                    </div>
-                    <div class="accountContainer">
+                    <!-- <div class="accountContainer"> -->
                         <div class="accButtons">
+                            <div class="SettingsTitle">
+                                <h1>Settings</h1>
+                                <p>Manage your account settings</p>
+                            </div>
                             <label class:selected={accSelect === 'Account'}>
                                 <input type="radio" bind:group={accSelect} value="Account">
-                                <span>Personal Information</span>
+                                <span><i class="fa-solid fa-circle-info"></i> Personal Information</span>
                             </label>
                             <label class:selected={accSelect === 'Security'}>
                                 <input type="radio" bind:group={accSelect} value="Security">
-                                <span>Security</span>
+                                <span><i class="fa-solid fa-shield-halved"></i> Security</span>
                             </label>
                             <label>
                                 <button on:click={authHandlers.logout}></button>
-                                <span>Logout</span>
+                                <span><i class="fa-solid fa-right-from-bracket"></i> Logout</span>
                             </label>
-                        </div>
-                        <div class="verticalLine">
-
                         </div>
                         <div class="accDetails">
                             {#if accSelect === 'Account'}
                                 <!-- Content for Account Settings -->
-                                <p>Here are your account settings...</p>
                                 <div>
-                                    <label for="profilePic">
-                                        <img src={profilePic} alt="Your Profile Pict" class="imgContainer">
-                                    </label>
-                                    <input type="file" name="profilePic" id="profilePic" value="" accept="image/*" class="fileInput" on:change={handleFileChange}/>
-                                    
-                                    <!-- <h1>{username}</h1> -->
-                                    <!-- input type must be just by clicking the img above, and remove button -->
+                                    <h2>Personal Information</h2>
+                                    <p>Make changes to your personal    information</p>
                                 </div>
-                                
+                                <div>
+                                    <span class="inputTitle">Profile Picture</span>
+                                    <div class="profileOverview">
+                                        <label for="profilePic" class="profilePicLabel">
+                                            <img src={profilePic} alt="Your Profile Pict" class="imgContainer">
+                                            <div class="imgOverlay">
+                                                <i class="fa-solid fa-image"></i>
+                                            </div>
+                                        </label>
+                                        <input type="file" name="profilePic" id="profilePic" value="" accept="image/*" class="fileInput" on:change={handleFileChange}/>
+                                        <div>
+                                            <p class="inputTitle">{username}</p>
+                                            <span>{email}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <form>
+                                    <div class="pInfGrid">
+                                        <div>
+                                            <span class="inputTitle">Username</span>
+                                            <label class = "accInputs">
+                                                <input type="text" placeholder="Username" bind:value={usernameInput}>
+                                            </label>
+                                        </div>
+                                            
+                                        <div>
+                                            <span class="inputTitle">Date of Birth</span>
+                                            <label class = "accInputs">
+                                                <input type="date" placeholder="Date of Birth" bind:value={DOBInput}>
+                                            </label>
+                                        </div>
+
+                                        <div>
+                                            <span class="inputTitle">Phone Number</span>
+                                            <label class = "accInputs">
+                                                <input type="tel" placeholder="Phone Number (Optional)" bind:value={phoneNumberInput}>
+                                            </label>
+                                        </div>
+                                    </div>
+                                        <label class="saveButton {!isChanged ? 'disabledButton' : ''}">
+                                            <button on:click={saveChanges} disabled={!isChanged}>
+                                                <span>Save Changes</span>
+                                            </button>
+                                        </label>
+                                        
+                                    </form>
                             {:else if accSelect === 'Security'}
                                 <!-- Content for Security -->
                                 <p>Security options...</p>
                             {/if}
                         </div>
-                    </div>
+                    <!-- </div> -->
                 </div>
             </div>
         {/if}
@@ -112,15 +178,120 @@
 
 
 <style>
-    /* h1{
+
+    .imgOverlay{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 100%;
+        background-color: rgba(0,0,0,0.5);
         font-size: 2rem;
-        text-align: left;
-    } */
+        color:var(--app_bg);
+        opacity: 0;
+    }
+
+    .imgOverlay:hover{
+        opacity: 1;
+    }
+
+    .profileOverview{
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .inputTitle{
+        font-weight: bold;
+        /* margin-bottom: 1rem; */
+    }    
+
+    button {
+        background: none;
+        border: none;
+        padding: 0;
+        cursor: pointer;
+    }
+    
+    input{
+        width: 100%;
+        height: 100%;
+        border: none;
+        background : transparent;
+        color: var(--text_high_contrast);
+        /* font-size: 1rem;
+        font-family:Poppins, sans-serif; */
+        padding: 0.5rem;
+    }
+
+    form label:focus-within{
+        border: 1px solid var(--border_interactive_hover)
+    }
+    form label:not(.saveButton):hover{
+        border: 1px solid var(--border_interactive_hover)
+    }
+    input:not(.saveButton):focus{
+        outline: none;
+    }
+
+    .pInfGrid{
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+        margin-bottom: 2rem;
+    }
+
+    .accInputs, .saveButton{
+        position: relative;
+        display: block;
+        border: 1px solid var(--border_interactive_default);
+        background-color: var(--app_bg);
+        border-radius: 5px;
+    }
+
+    .saveButton{
+        display: flex;
+        /* font-size: 2rem; */
+        border: none;
+        background-color: var(--solid_bg);
+        color: white;
+        padding: 0.5rem;
+        justify-content: center;
+        align-items: center;
+        justify-self: center;
+        cursor: pointer;
+        /* margin: 5px; */
+        width: 10rem;
+    }
+
+    .saveButton button{
+        color: var(--text_high_contrast);
+    }
+
+    .saveButton:not(.disabledButton):hover{
+        background-color: var(--solid_bg_hover);
+        color : var(--light_text_high_contrast);
+    }
+
+    .saveButton:not(.disabledButton) button:hover{
+        color: var(--light_text_high_contrast);
+    }
+
+    .disabledButton{
+        background-color: var(--subtle_app_bg);
+        cursor: default;
+    }
+    
+    .disabledButton button{
+        color: var(--light_text_low_contrast);
+        cursor: default;
+    }
 
     main{
         padding: 1rem;
         margin-left: 18rem;
-        /* fill the empty right space */
         width: calc(100% - 18rem);
         position:relative;
     }
@@ -142,69 +313,64 @@
 
     .accButtons label {
         display: inline-block;
-        background-color: var(--light_clr);
-        padding: 10px;
-        margin: 5px;
-        border-radius: 5px;
+        background-color: var(--solid_bg);
+        padding: 10px 10px 10px 50px;
+        margin-left: 2rem;
+        /* border-radius: 10px 0px 0px 10px;  */
+        font-size: 1rem;
         cursor: pointer;
-        /* Additional styling as needed */
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 20% 100%);
+        /* clip-path: polygon(0 0, 100% 0%, 100% 100%, 0% 100%, 10% 50%); */
     }
 
-    .accButtons label:hover {
-        background-color: var(--prim_clr);
-        color: var(--lighter_clr);
-        /* Additional styling as needed */
+    .accButtons label:not(.selected):hover {
+        background-color: var(--solid_bg_hover);
+        color: var(--light_text_high_contrast);
+        margin-left: 0;
     }
 
-    .accDetails label{
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        overflow: hidden;
-        width: 100px; /* Match the imgContainer's size */
-        height: 100px; /* Match the imgContainer's size */
-        border-radius: 100%; /* Inherit border-radius for a circular shape */
-        cursor: pointer;
-    /* Ensure box sizing includes padding and border */
-        box-sizing: border-box;
-    /* Optional: adjust positioning if necessary */
-        position: relative;
-    }
-
-    button {
-        background: none; /* Removes the default background */
-        border: none; /* Removes the default border */
-        padding: 0; /* Removes the default padding */
-        cursor: pointer;
-    }
-    
-
-    /* Style when radio button is checked */
-    label.selected{
-        background-color: var(--prim_clr);
-        color: var(--lighter_clr);
-        /* Other styles to indicate selection */
+    .accButtons label.selected{
+        background-color: var(--navbar_bg);
+        color: var(--light_text_high_contrast);
+        transform: translateX(30px);
+        cursor: default;
     }
 
     .accButtons{
         display: flex;
         flex-direction: column;
         /* gap: 1rem; */
-        padding: 1rem;
-        background: var(--light_clr);
-        border-radius: 5px;
+        /* padding: 2rem 0rem 1rem 1rem; */
+        padding-top: 2rem;
+        background: var(--border_interactive_hover);
+        /* background: transparent; */
+        /* border-radius: 5px; */
         width: 25%;
-        min-width: 15rem;
+        /* width: 16rem; */
+        min-width: 18rem;
         height: 100%;
+    }
+
+    .profilePicLabel{
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+        width: 100px;
+        height: 100px;
+        border-radius: 100%;
+        cursor: pointer;
+        box-sizing: border-box;
+        position: relative;
     }
 
     .accDetails{
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        padding: 1rem;
-        background: var(--light_clr);
-        border-radius: 5px;
+        gap: 2rem;
+        padding: 3rem;
+        background: var(--border_interactive_default);
+        /* border-radius: 5px; */
         width: 75%;
         height: 100%;
         overflow: scroll;
@@ -212,22 +378,11 @@
         scrollbar-width: none;
     }
 
-    .accountContainer{
-        display: flex;
-        flex-direction: row;
-        gap: 1rem;
-        /* padding: 1rem; */
-        background: var(--light_clr);
-        border-radius: 5px;
-        width: 100%;
-        height: 100%;
-        /* overflow: scroll; */
-    }
-
     .SettingsTitle{
 
         width: 100%;
         height: 8rem;
+        padding-left: 2rem;
         /* text-align: left; */
         /* justify-content: left; */
 
@@ -246,14 +401,14 @@
     }
 
     .accountSettings{
-        color: var(--prim_clr);
+        color: var(--text_high_contrast);
         z-index: 2;
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         /* align-items: center;
         justify-content: center; */
-        padding: 3rem 3rem;
-        background: var(--light_clr);
+        /* padding: 3rem 3rem; */
+        /* background-color: var(--navbar_bg_darker); */
         width: 80rem;
         max-width: 80%;
         max-height: 80%;
