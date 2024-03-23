@@ -1,9 +1,10 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, setPersistence, browserLocalPersistence, browserSessionPersistence, verifyBeforeUpdateEmail, reauthenticateWithCredential } from 'firebase/auth';
 import {writable} from 'svelte/store';
 import {auth, db, storage} from '$lib/firebase/firebase.js'
 import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { doc, setDoc } from 'firebase/firestore';
 import { set } from 'firebase/database';
+
 
 //Store to keep track of the user's data, whenever the database is updated, update the store as well.
 export const authStore = writable({
@@ -56,7 +57,7 @@ export async function updateProfileData(username, DOB, phoneNumber) {
 
 //stores all functions relating to authentication, such as signup, login, logout, and forget password. the names of the functions are self explanatory.
 export const authHandlers = {
-    signup: async (email, pass, username, DOB, phoneNumber) => {
+    signup: async (email, pass, username, DOB, phoneNumber = '') => {
 
         try{
             const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
@@ -69,6 +70,8 @@ export const authHandlers = {
                 username,
                 profilePic: 'https://placebear.com/250/250',                    
                 email,
+                firstName: '',
+                lastName: '',
                 DOB,
                 phoneNumber,
                 notes: []
@@ -99,8 +102,10 @@ export const authHandlers = {
 
             // Wait for profile update to complete before continuing
     },
-    login: async (email, pass) => {
+    login: async (email, pass, rememberMe) => {
+        const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
         try{
+            await setPersistence(auth, persistenceType);
             await signInWithEmailAndPassword(auth,email,pass)
         }
         catch (error) {
@@ -122,8 +127,9 @@ export const authHandlers = {
     },
     logout: async () => {
         await signOut(auth);
+        showModal.set(false);
     },
-    forgetPassword: async (email) => {
+    resetPassword: async (email) => {
         await sendPasswordResetEmail(auth, email);
     },
     deleteAccount: async () => {
@@ -132,8 +138,27 @@ export const authHandlers = {
         const fileRef = storageRef(storage, `profilePics/${user.uid}`);
         await fileRef.delete();
         await user.delete();
+    },
+    updateEmail: async (email) => {
+        await verifyBeforeUpdateEmail(auth.currentUser, email);
+    },
+    reauthenticate: async(password) => {
+        const credential = EmailAuthProvider.credential(auth.currentUser.email, password);
+        try{
+            await reauthenticateWithCredential(auth.currentUser, credential);
+            userReauthenticated.set(true);
+            return true;
+        }
+        catch{
+            console.log('Reauth failed');
+            userReauthenticated.set(false);
+            return false;
+        }
+        
     }
+
 }
 
 //store to keep track of the modal state, whether it is open or closed. note: modal is the user settings popup
 export const showModal = writable(false);
+export const userReauthenticated = writable(false);

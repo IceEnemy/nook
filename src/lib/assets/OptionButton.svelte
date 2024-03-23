@@ -5,6 +5,7 @@
     //shows the modal
     function showAcc(){
         showModal.set(true);
+        //set focus on the top most div
     } 
 </script>
 

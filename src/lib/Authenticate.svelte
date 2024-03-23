@@ -13,6 +13,8 @@
     let confirmPassword = '';
     let DOB = '';
     let phoneNumber = '';
+    let rememberMe = false;
+    let TOS = false;
     let error = false;
     let errormsg = '';
     //second step is a check of whether or not the user is on the second step of the registration process
@@ -137,7 +139,7 @@
 
         try{
             if(!register){
-                await authHandlers.login(email, password);
+                await authHandlers.login(email, password, rememberMe);
             }
             else{
                 if(!passwordRequirements(password)){
@@ -232,10 +234,12 @@
             <!--remember me checkbox-->
             {#if !register || slid}
                 <div class="rmbMeContainer" transition:fade ={{duration:500, easing:cubicOut}}>
-                    <input type="checkbox" />
+                    
                     {#if register}
+                        <input type="checkbox" bind:checked={TOS}/>
                         <span>Agree to <button class="clickableText">Terms of Service</button></span>
                     {:else}
+                        <input type="checkbox" bind:checked={rememberMe}/>
                         <span>Remember Me</span>
                     {/if}
                 </div>

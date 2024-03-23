@@ -47,41 +47,22 @@
                     })
                 }
             })
-            // const docSnap = await getDoc(docRef);
-            // if(!docSnap.exists()){
-            //     console.log('Creating User')
-            //     const userRef = doc(db, 'users', user.uid);
-            //     dataToSetToStore ={
-            //         username: user.displayName,
-            //         profilePic: user.photoURL,
-            //         email: user.email,
-            //         notes: []
-            //     }
-            //     await setDoc(
-            //         userRef,
-            //         dataToSetToStore,
-            //         { merge: true }
-            //     )
-            // }
-            // else{
-            //     console.log('Fetching user')
-            //     const data = docSnap.data();
-            //     dataToSetToStore = data;
-            // }
-            // authStore.update((curr) => {
-            //     return {
-            //         ...curr,
-            //         user,
-            //         data: dataToSetToStore,
-            //         loading: false
-            //     }
-            // })
         });
         return () => {
             unsubscribe();
             if (unsubDoc) unsubDoc();
         }
     });
+    // function to check when auth email is the same as firestore email
+    $: {
+        if(auth.currentUser !== null && authStore.data !== null && authStore.data.email !== null && auth.currentUser.email !== null){
+            if(auth.currentUser.email !== authStore.data.email){
+        setDoc(doc(db, 'users', auth.currentUser.uid), {
+            email: auth.currentUser.email
+        }, {merge: true})
+    }
+    }}
+
 </script>
 
 <div class="mainContainer">
