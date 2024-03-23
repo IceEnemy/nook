@@ -1,9 +1,8 @@
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, updateProfile, setPersistence, browserLocalPersistence, browserSessionPersistence, verifyBeforeUpdateEmail, reauthenticateWithCredential } from 'firebase/auth';
+import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence, verifyBeforeUpdateEmail, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 import {writable} from 'svelte/store';
 import {auth, db, storage} from '$lib/firebase/firebase.js'
-import { ref as storageRef, uploadBytes, getDownloadURL } from 'firebase/storage';
-import { doc, setDoc } from 'firebase/firestore';
-import { set } from 'firebase/database';
+import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { doc, setDoc, serverTimestamp, deleteDoc } from 'firebase/firestore';
 
 
 //Store to keep track of the user's data, whenever the database is updated, update the store as well.
@@ -22,20 +21,26 @@ export async function uploadProfilePicture(file) {
     console.log('Uploading file!');
 
     
+    try{
+        const uid = auth.currentUser.uid;
 
-    const uid = auth.currentUser.uid;
+        const fileRef = storageRef(storage, `profilePics/${uid}`);
 
-    const fileRef = storageRef(storage, `profilePics/${uid}`);
+        const snapshot = await uploadBytes(fileRef, file);
+        const photoURL = await getDownloadURL(fileRef);
 
-    const snapshot = await uploadBytes(fileRef, file);
-    const photoURL = await getDownloadURL(fileRef);
-
-    const userRef = doc(db, 'users', uid);
-    await setDoc(
-        userRef,
-        {profilePic: photoURL},
-        {merge: true}
-    );
+        const userRef = doc(db, 'users', uid);
+        await setDoc(
+            userRef,
+            {profilePic: photoURL},
+            {merge: true}
+        );
+    }
+    catch{
+        let errorMessage = 'Profile picture upload failed';
+        throw new Error(errorMessage);
+    }
+    
 
 }
 
@@ -44,14 +49,20 @@ export async function updateProfileData(username, DOB, phoneNumber) {
     //     throw new Error('User not logged in');
     //     return;
     // }
-    const uid = auth.currentUser.uid;
-    // console.log('Updating profile data');
-    const userRef = doc(db, 'users', uid);
-    await setDoc(
-        userRef,
-        {username, DOB, phoneNumber},
-        {merge: true}
-    );
+    try{
+        const uid = auth.currentUser.uid;
+        const userRef = doc(db, 'users', uid);
+        await setDoc(
+            userRef,
+            {username, DOB, phoneNumber},
+            {merge: true}
+        );
+    }
+    catch{
+        let errorMessage = 'Profile update failed';
+        throw new Error(errorMessage);
+    }
+    
 
 }
 
@@ -74,6 +85,7 @@ export const authHandlers = {
                 lastName: '',
                 DOB,
                 phoneNumber,
+                accCreationDate: serverTimestamp(),
                 notes: []
             }
             await setDoc(
@@ -130,17 +142,51 @@ export const authHandlers = {
         showModal.set(false);
     },
     resetPassword: async (email) => {
-        await sendPasswordResetEmail(auth, email);
+        try{
+            await sendPasswordResetEmail(auth, email);
+        }
+        catch{
+            let errorMessage = 'Password reset failed';
+            throw new Error(errorMessage);
+        }
     },
     deleteAccount: async () => {
-        const user = auth.currentUser;
-        await db.collection('users').doc(user.uid).delete();
-        const fileRef = storageRef(storage, `profilePics/${user.uid}`);
-        await fileRef.delete();
-        await user.delete();
+        try{
+            console.log('1')
+            const user = auth.currentUser;
+            console.log('2')
+            await deleteDoc(doc(db, 'users', user.uid));
+            console.log('3')
+            const fileRef = storageRef(storage, `profilePics/${user.uid}`);
+            console.log('4')
+            await deleteObject(fileRef);
+            console.log('5')
+            await user.delete();
+            console.log('6')
+        }
+        catch{
+            let errorMessage = 'Account deletion failed';
+            throw new Error(errorMessage);
+        }
+        
     },
     updateEmail: async (email) => {
-        await verifyBeforeUpdateEmail(auth.currentUser, email);
+        try{
+            await verifyBeforeUpdateEmail(auth.currentUser, email);
+        }
+        catch{
+            let errorMessage = 'Email update failed';
+            throw new Error(errorMessage);
+        }
+    },
+    updatePassword: async (newPassword) => {
+        try{
+            await updatePassword(auth.currentUser, newPassword);
+        }
+        catch{
+            let errorMessage = 'Password update failed';
+            throw new Error(errorMessage);
+        }
     },
     reauthenticate: async(password) => {
         const credential = EmailAuthProvider.credential(auth.currentUser.email, password);
@@ -158,6 +204,51 @@ export const authHandlers = {
     }
 
 }
+
+export const passwordRequirements = {
+    complete: (password) => {
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d\s])[A-Za-z\d\S]{8,}$/;
+        return passwordRegex.test(password);
+    },
+    length: (password) => {
+        return password.length >= 8;
+    },
+    uppercase: (password) => {
+        const passwordRegex = /^(?=.*[A-Z])/;
+        return passwordRegex.test(password);
+    },
+    lowercase: (password) => {
+        const passwordRegex = /^(?=.*[a-z])/;
+        return passwordRegex.test(password);
+    },
+    number: (password) => {
+        const passwordRegex = /^(?=.*\d)/;
+        return passwordRegex.test(password);
+    },
+    special: (password) => {
+        const passwordRegex = /^(?=.*[^A-Za-z\d\s])/;
+        return passwordRegex.test(password);
+    }
+}
+// function passwordUppercase(password){
+//     const passwordRegex = /^(?=.*[A-Z])/;
+//     return passwordRegex.test(password);
+// }
+
+// function passwordLowercase(password){
+//     const passwordRegex = /^(?=.*[a-z])/;
+//     return passwordRegex.test(password);
+// }
+
+// function passwordNumber(password){
+//     const passwordRegex = /^(?=.*\d)/;
+//     return passwordRegex.test(password);
+// }
+
+// function passwordSpecial(password){
+//     const passwordRegex = /^(?=.*[^A-Za-z\d\s])/;
+//     return passwordRegex.test(password);
+// }
 
 //store to keep track of the modal state, whether it is open or closed. note: modal is the user settings popup
 export const showModal = writable(false);

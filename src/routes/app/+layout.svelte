@@ -1,7 +1,7 @@
 <script>
     import {onMount, onDestroy, afterUpdate} from 'svelte';
     import {page} from '$app/stores';
-    import {authHandlers, showModal, updateProfileData, userReauthenticated} from '$lib/store/store';
+    import {authHandlers, showModal, updateProfileData, userReauthenticated, passwordRequirements} from '$lib/store/store';
     import {auth}  from '$lib/firebase/firebase.js';
     import Navbar from '$lib/Navbar.svelte';
     import {fade, scale} from 'svelte/transition';
@@ -11,7 +11,8 @@
 
     onMount(() => {
         unsubscribe = page.subscribe(() => {
-            showModal.set(true);
+            showModal.set(false);
+            userReauthenticated.set(false);
         });
     });
 
@@ -25,15 +26,40 @@
     $: DOB = $authStore.data?.DOB || 'Loading..';
     $: email = $authStore.data?.email || 'Loading..';
 
+    $: passwordLengthCheck = passwordRequirements.length(newPassword);
+    $: passwordUppercaseCheck = passwordRequirements.uppercase(newPassword);
+    $: passwordLowercaseCheck = passwordRequirements.lowercase(newPassword);
+    $: passwordNumberCheck = passwordRequirements.number(newPassword);
+    $: passwordSpecialCheck = passwordRequirements.special(newPassword);
+
     let usernameInput;
     let DOBInput;
     let phoneNumberInput;
+
+    let password = '';
+    let newEmail = '';
+    let delEmail = '';
+    let newPassword = '';
+    let confirmNewPassword = '';
+    let errorPopup = '';
+    let error = '';
+
+
+    let isPasswordFocused = false;
+
+    function handlePassFocus(){
+        isPasswordFocused = true;
+    }
+
+    function handlePassBlur(){
+        isPasswordFocused = false;
+    }
 
     // console.log(username, DOB, phoneNumber);
 
     // let username = '';
     // let profilePic = '';
-    let accSelect = 'Security'
+    let accSelect = 'Account'
 
     let AccPopup = '';
     // onMount(() => {
@@ -58,6 +84,74 @@
         dataGot = false;
     }
 
+    function openPopup(param){
+        if(param == 'email'){
+            AccPopup = 'email';
+            console.log(param);
+        }
+        else if(param == 'password'){
+            AccPopup = 'password';
+            console.log(param);
+        }
+        else if(param == 'delete'){
+            AccPopup = 'delete';
+            console.log(param);
+        }
+    }
+
+    async function confirmReauth(){
+        const success = await authHandlers.reauthenticate(password);
+        if(success){
+            if(AccPopup === 'email'){
+                AccPopup = 'emailInput'
+            }
+            else if(AccPopup === 'password'){
+                AccPopup = 'passwordInput';
+            }
+            else if(AccPopup === 'delete'){
+                AccPopup = 'deleteInput';
+            }
+        }
+    }
+
+    async function sendChangeEmail(){
+        try{
+            await authHandlers.updateEmail(newEmail);
+            AccPopup = 'emailSent';
+        }
+        catch(err){
+            errorPopup = err.message;
+        }
+    }
+
+    async function changePassword(){
+        if(newPassword !== confirmNewPassword){
+            errorPopup = 'Passwords do not match';
+            return;
+        }
+        try{
+            await authHandlers.updatePassword(newPassword);
+            AccPopup = 'passwordChanged';
+        }
+        catch(err){
+            errorPopup = err.message;
+        }
+        
+    }
+
+    async function deleteAccount(){
+        if(delEmail !== email){
+            errorPopup = 'Email does not match';
+            return;
+        }
+        try{
+            await authHandlers.deleteAccount();
+        }
+        catch(err){
+            errorPopup = err.message;
+        }
+    }
+
     function escAcc(event){
         if(event.key === "Escape"){
             closeAcc();
@@ -68,13 +162,20 @@
     function closeAcc(){
         showModal.set(false);
         dataGot = false;
+        error = '';
         closeAccPopup();
     }
 
     function closeAccPopup(){
         AccPopup = '';
+        password = '';
+        newEmail = '';
+        delEmail = '';
+        newPassword = '';
+        confirmNewPassword = '';
+        errorPopup = '';
         if(userReauthenticated){
-            userReauthenticated = false;
+            userReauthenticated.set(false);
         }
     }
 
@@ -99,21 +200,21 @@
 
     let accPopupModal;
 
-    // $: {
-    //     if (showModal && !showModal.previous && accSettingsModal) {
-    //         setTimeout(() => {
-    //             accSettingsModal.focus();
-    //         }, 0);
-    //     }
-    // }
+    $: {
+        if (showModal && !showModal.previous && accSettingsModal) {
+            setTimeout(() => {
+                accSettingsModal.focus();
+            }, 0);
+        }
+    }
 
-    // $: {
-    //     if(AccPopup !== '' && !AccPopup.previous && accPopupModal){
-    //         setTimeout(() => {
-    //             accPopupModal.focus();
-    //         }, 0);
-    //     }
-    // }
+    $: {
+        if(AccPopup !== '' && !AccPopup.previous && accPopupModal){
+            setTimeout(() => {
+                accPopupModal.focus();
+            }, 0);
+        }
+    }
     
 
     $: {
@@ -149,11 +250,11 @@
                     </label>
                     <label class:selected={accSelect === 'Security'}>
                         <input type="radio" bind:group={accSelect} value="Security">
-                        <span><i class="fa-solid fa-shield-halved"></i>Security</span>
+                        <span><i class="fa-solid fa-shield-halved"></i> Security</span>
                     </label>
                     <label>
                         <button on:click={authHandlers.logout}></button>
-                        <span><i class="fa-solid fa-right-from-bracket"></i>Logout</span>
+                        <span><i class="fa-solid fa-right-from-bracket"></i> Logout</span>
                     </label>
                 </div>
                 <div class="accDetails">
@@ -220,7 +321,7 @@
                             <p class="inputTitle secTitle">Email</p>
                             <p class = "secContent">{email}</p>
                             <label class="secButton saveButton">
-                                <button>Change Email</button>
+                                <button on:click={() => openPopup('email')}>Change Email</button>
                             </label>
                             
                         </div>
@@ -228,31 +329,165 @@
                             <p class="inputTitle secTitle">Password</p>
                             <p class = "secContent">Change your password</p>
                             <label class="secButton saveButton">
-                                <button>Change Password</button>
+                                <button on:click={() =>openPopup('password')}>Change Password</button>
+                            </label>
+                        </div>
+                        <div class="securityChangeGrid delAcc">
+                            <p class="inputTitle secTitle">Delete Account</p>
+                            <p class = "secContent">Delete your account</p>
+                            <label class="secButton saveButton">
+                                <button on:click={() =>openPopup('delete')}>Delete Account</button>
                             </label>
                         </div>
                         
                     {/if}
+                    {#if error !== ''}
+                        <p class="error">{error}</p>
+                    {/if}
                 </div>
-                <div class="changePopups" transition:fade={{ duration: 200 }} on:click={closeAcc} on:keydown={(event) => {escAcc(event)}} tabindex="-1" role="dialog" aria-label="Change Popup">
+                {#if AccPopup !== ''}
+                <div class="changePopups" transition:fade={{ duration: 200 }} on:click={closeAccPopup} on:keydown={(event) => {escAccPopup(event)}} tabindex="-1" role="dialog" aria-label="Change Popup">
                 <!-- Change Email Popup -->
                     <div class="changeInput" transition:scale={{ start:0.8, end:1,duration: 200}} on:click|stopPropagation tabindex="0" bind:this={accPopupModal}>
-                        <h2>Change Email</h2>
-                        <form class = "popupForm">
-                            <div>
-                                <span class="inputTitle">Password</span>
-                                <label class = "accInputs">
-                                    <input type="password" placeholder="Enter current password">
-                                    
-                                </label>
-                            </div>
+                        {#if errorPopup !== ''}
+                            <p class="error">{errorPopup}</p>
+                        {/if}
+                        {#if AccPopup === 'email' || AccPopup === 'password' || AccPopup === 'delete'}
+                            <h2>Enter your password</h2>
+                            <form class = "popupForm">
+                                <div>
+                                    <span class="inputTitle">Password</span>
+                                    <label class = "accInputs">
+                                        <input type="password" placeholder="Enter current password" bind:value={password}>
+                                        
+                                    </label>
+                                </div>
                             
-                            <label class="saveButton">
-                                <button>Confirm</button>
-                            </label>
-                        </form>
+                                <label class="saveButton">
+                                    <button on:click={confirmReauth}>Confirm</button>
+                                </label>
+                                
+                            </form>
+                        {:else if AccPopup === 'emailInput'}
+                            <h2>Change Email</h2>
+                            <form class = "popupForm">
+                                <div>
+                                    <span class="inputTitle">New Email</span>
+                                    <label class = "accInputs">
+                                        <input type="email" placeholder="Enter new email" bind:value={newEmail}>
+                                        
+                                    </label>
+                                </div>
+                            
+                                <label class="saveButton">
+                                    <button on:click={sendChangeEmail}>Send email</button>
+                                </label>
+                                
+                            </form>
+
+                        {:else if AccPopup === 'passwordInput'}
+                            <h2>Change Password</h2>
+                            <form class = "popupForm">
+                                <div>
+                                    <span class="inputTitle">New Password</span>
+                                    <label class = "accInputs">
+                                        <input type="password" placeholder="Enter new password" bind:value={newPassword} on:focus={handlePassFocus} on:blur={handlePassBlur}>
+                                        
+                                    </label>
+                                </div>
+                                <div>
+                                    <span class="inputTitle">Confirm New Password</span>
+                                    <label class = "accInputs">
+                                        <input type="password" placeholder="Confirm new password" bind:value={confirmNewPassword}>
+                                    </label>
+                                </div>
+                            
+                                <label class="saveButton">
+                                    <button on:click={changePassword}>Change password</button>
+                                </label>
+                                
+                            </form>
+                            {#if isPasswordFocused}
+                                <div class="reqPopup">
+                                    <h2>Password Requirements</h2>
+                                    <div class="reqCheck">
+                                        <div class="reqCheckmark">
+                                            {#if passwordLengthCheck}
+                                                <i class="fa-solid fa-check"></i>
+                                            {:else}
+                                                <i class="fa-solid fa-xmark"></i>
+                                            {/if}
+                                        </div>
+                                        <p class={passwordLengthCheck ? 'reqSatisfied' : 'reqNotMet'}>8 characters long</p>
+                                    </div>
+                                    <div class="reqCheck">
+                                        <div class="reqCheckmark">
+                                            {#if passwordUppercaseCheck}
+                                                <i class="fa-solid fa-check"></i>
+                                            {:else}
+                                                <i class="fa-solid fa-xmark"></i>
+                                            {/if}
+                                        </div>
+                                        <p class = {passwordUppercaseCheck ? 'reqSatisfied' : 'reqNotMet'}>Have at least 1 uppercase character</p>
+                                    </div>
+                                    <div class="reqCheck">
+                                        <div class="reqCheckmark">
+                                            {#if passwordLowercaseCheck}
+                                                <i class="fa-solid fa-check"></i>
+                                            {:else}
+                                                <i class="fa-solid fa-xmark"></i>
+                                            {/if}
+                                        </div>
+                                        <p class = {passwordLowercaseCheck ? 'reqSatisfied' : 'reqNotMet'}>Have at least 1 lowercase character</p>
+                                    </div>
+                                    <div class="reqCheck">
+                                        <div class="reqCheckmark">
+                                            {#if passwordNumberCheck}
+                                                <i class="fa-solid fa-check"></i>
+                                            {:else}
+                                                <i class="fa-solid fa-xmark"></i>
+                                            {/if}
+                                        </div>
+                                        <p class = {passwordNumberCheck ? 'reqSatisfied' : 'reqNotMet'}>Have at least 1 number</p>
+                                    </div>
+                                    <div class="reqCheck">
+                                        <div class="reqCheckmark">
+                                            {#if passwordSpecialCheck}
+                                                <i class="fa-solid fa-check"></i>
+                                            {:else}
+                                                <i class="fa-solid fa-xmark"></i>
+                                            {/if}
+                                        </div>
+                                        <p class = {passwordSpecialCheck ? 'reqSatisfied' : 'reqNotMet'}>Have at least 1 special character</p>
+                                    </div>
+                                </div>
+                            {/if}
+                            
+                        {:else if AccPopup === 'deleteInput'}
+                            <h2>Delete Account</h2>
+                            <form class = "popupForm">
+                                <div>
+                                    <span class="inputTitle">Are you sure you want to delete your account? Type your email</span>
+                                    <label class = "accInputs">
+                                        <input type="email" placeholder="Enter your email" bind:value={delEmail}>
+                                    </label>
+                                </div>
+                                <label class="saveButton">
+                                    <button on:click={deleteAccount}>Delete Account</button>
+                                </label>
+                            </form>
+
+                        {:else if AccPopup === 'emailSent'}
+                            <h2>Email Sent</h2>
+                            <p>An email has been sent to your new email address. Please verify your email address to complete the change!</p>
+
+                        {:else if AccPopup === 'passwordChanged'}
+                            <h2>Password Changed</h2>
+                            <p>Your password has been changed successfully!</p>
+                        {/if}
                     </div>
                 </div>
+                {/if}
             </div>
             
         </div>
@@ -265,7 +500,12 @@
 
 
 <style>
-
+    .reqPopup{
+        transform: translate(70%, -15%);
+    }
+    .delAcc{
+        margin-top: auto;
+    }
     .popupForm{
         display: flex;
         flex-direction: column;

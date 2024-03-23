@@ -189,10 +189,6 @@
         /* border: 1px solid transparent; */
         opacity:0;
     }
-    .error{
-        color: coral;
-        font-size:0.9rem;
-    }
     .spin{
         animation: spin 2s infinite;
     }

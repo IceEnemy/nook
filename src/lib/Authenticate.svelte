@@ -1,6 +1,6 @@
 <script>
     import '$lib/global.css'
-	import { authHandlers } from './store/store';
+	import { authHandlers, passwordRequirements} from './store/store';
     import { slide, fade } from 'svelte/transition';
     import { cubicOut } from 'svelte/easing';
     import { flip } from 'svelte/animate';
@@ -40,41 +40,41 @@
         }
     }
 
-    function passwordRequirements(password){
-        // password needs to be atleast 8 letters long, contain atleast 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character
-        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d\s])[A-Za-z\d\S]{8,}$/;
-        return passwordRegex.test(password);
-    }
+    // function passwordRequirements(password){
+    //     // password needs to be atleast 8 letters long, contain atleast 1 uppercase letter, 1 lowercase letter, 1 number and 1 special character
+    //     const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d\s])[A-Za-z\d\S]{8,}$/;
+    //     return passwordRegex.test(password);
+    // }
 
-    function passwordLength(password){
-        return password.length >= 8;
-    }
+    // function passwordLength(password){
+    //     return password.length >= 8;
+    // }
 
-    function passwordUppercase(password){
-        const passwordRegex = /^(?=.*[A-Z])/;
-        return passwordRegex.test(password);
-    }
+    // function passwordUppercase(password){
+    //     const passwordRegex = /^(?=.*[A-Z])/;
+    //     return passwordRegex.test(password);
+    // }
 
-    function passwordLowercase(password){
-        const passwordRegex = /^(?=.*[a-z])/;
-        return passwordRegex.test(password);
-    }
+    // function passwordLowercase(password){
+    //     const passwordRegex = /^(?=.*[a-z])/;
+    //     return passwordRegex.test(password);
+    // }
 
-    function passwordNumber(password){
-        const passwordRegex = /^(?=.*\d)/;
-        return passwordRegex.test(password);
-    }
+    // function passwordNumber(password){
+    //     const passwordRegex = /^(?=.*\d)/;
+    //     return passwordRegex.test(password);
+    // }
 
-    function passwordSpecial(password){
-        const passwordRegex = /^(?=.*[^A-Za-z\d\s])/;
-        return passwordRegex.test(password);
-    }
+    // function passwordSpecial(password){
+    //     const passwordRegex = /^(?=.*[^A-Za-z\d\s])/;
+    //     return passwordRegex.test(password);
+    // }
 
-    $: passwordLengthCheck = passwordLength(password);
-    $: passwordUppercaseCheck = passwordUppercase(password);
-    $: passwordLowercaseCheck = passwordLowercase(password);
-    $: passwordNumberCheck = passwordNumber(password);
-    $: passwordSpecialCheck = passwordSpecial(password);
+    $: passwordLengthCheck = passwordRequirements.length(password);
+    $: passwordUppercaseCheck = passwordRequirements.uppercase(password);
+    $: passwordLowercaseCheck = passwordRequirements.lowercase(password);
+    $: passwordNumberCheck = passwordRequirements.number(password);
+    $: passwordSpecialCheck = passwordRequirements.special(password);
 
     async function handleAuthenticate(){
 
@@ -98,7 +98,7 @@
         }
 
         if(register){
-            if(!passwordRequirements(password)){
+            if(!passwordRequirements.complete(password)){
                 error = true;
                 errormsg = "Password does not meet the requirements.";
                 return;
@@ -142,7 +142,7 @@
                 await authHandlers.login(email, password, rememberMe);
             }
             else{
-                if(!passwordRequirements(password)){
+                if(!passwordRequirements.complete(password)){
                     error = true;
                     authenticating = false;
                     return;
@@ -334,63 +334,6 @@
 
 </div>
 <style>
-    .reqSatisfied, .reqNotMet{
-        padding: 2px;
-        border-radius: 5px;
-        /* display: grid; */
-        place-items: center;
-    }
-    .reqSatisfied{
-        background-color: var(--navbar_contrast_text_transparent);
-    }
-    .reqNotMet{
-        background-color: var(--error_transparent);
-        /* color: var(--app_bg); */
-    }
-    .fa-check{
-        color: var(--navbar_contrast_text)
-    }
-    .fa-xmark{
-        color: var(--error);
-    }
-    .reqCheck{
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
-    /* .reqCheckmark{
-        border: 1px solid var(--text_high_contrast);
-        border-radius: 100%;
-    } */
-    .reqPopup{
-        position: absolute;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        gap: 1rem;
-        /* position: relative; */
-        /* left: 50%; */
-        transform: translate(115%, 100%);
-        width: 350px;
-        height: 250px;
-        border-radius: 10px;
-        box-shadow: 0 0 5px 3px rgba(0,0,0,0.1);
-        background-color: var(--app_bg);
-        z-index: 10;
-        padding: 1rem;
-    }
-    .reqPopup::after {
-        content: '';
-        position: absolute;
-        transform: rotate(45deg);
-        left: -10px;
-        top: 43.5%;
-        width: 20px; /* Tail width */
-        height: 20px; /* Tail height */
-        background-color: var(--app_bg); /* Tail color, match the reqPopup's background */
-        box-shadow: -3px 3px 5px 0 rgba(0,0,0,0.1);
-        z-index: 9;
-    }
     .rmbMeContainer{
         display: flex;
         align-items: center;
@@ -561,14 +504,6 @@
         /* border: 1px solid transparent; */
         opacity:0;
     }
-    .error{
-        color: var(--error);
-        font-size:0.9rem;
-    }
-    .spin{
-        animation: spin 2s infinite;
-    }
-
     .swipeLeft{
         animation: swipeLeft 500ms forwards;
     }
@@ -600,12 +535,4 @@
         }
     }
 
-    @keyframes spin {
-        from{
-            transform: rotate(0deg);
-        }
-        to{
-            transform: rotate(360deg);
-        }
-    }
 </style>
