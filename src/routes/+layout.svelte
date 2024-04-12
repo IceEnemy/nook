@@ -1,5 +1,6 @@
 <script>
     import '$lib/global.css'
+    import '$lib/iconify.css'
     import { onMount } from 'svelte';
     import { auth, db} from '$lib/firebase/firebase.js';
     import { doc, getDoc, onSnapshot, setDoc } from 'firebase/firestore';
@@ -82,8 +83,8 @@
     .mainContainer{
         height: 100%;
         width: 100%;
-        background: var(--text_high_contrast);
-        color: var(--lighter_clr);
+        background: var(--seasalt);
+        color: var(--van_dyke);
         position: relative;
         align-items: center;
         justify-content: center;

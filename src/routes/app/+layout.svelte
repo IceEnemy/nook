@@ -25,6 +25,7 @@
     $: phoneNumber = $authStore.data?.phoneNumber || 'Add Phone Number';
     $: DOB = $authStore.data?.DOB || 'Loading..';
     $: email = $authStore.data?.email || 'Loading..';
+    $: loading = $authStore.loading;
 
     $: passwordLengthCheck = passwordRequirements.length(newPassword);
     $: passwordUppercaseCheck = passwordRequirements.uppercase(newPassword);
@@ -192,7 +193,7 @@
     //     // document.querySelector('.blurmodal').focus();
     // }
 
-    $: isChanged = usernameInput !== username || DOBInput !== DOB || phoneNumberInput !== phoneNumber;
+    $: isChanged = usernameInput !== username || DOBInput !== DOB || (phoneNumberInput !== phoneNumber && phoneNumberInput !== '' && phoneNumber !== '');
 
     let dataGot = false;
 
@@ -229,6 +230,7 @@
     
 </script>
 
+{#if !loading}
 <div class="appContainer">
     <Navbar/>
     {#if $showModal}
@@ -497,6 +499,7 @@
         <slot/>
     </main>
 </div>
+{/if}
 
 
 <style>
@@ -505,36 +508,6 @@
     }
     .delAcc{
         margin-top: auto;
-    }
-    .popupForm{
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        justify-content: center;
-        align-items: center;
-    }
-
-    .changeInput{
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        padding: 2rem;
-        background: var(--border_interactive_default);
-        border-radius: 5px;
-    }
-
-    .changePopups{
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        background: rgba(0,0,0,0.5);
-        backdrop-filter: blur(5px);
-        z-index: 1;
     }
 
     .secTitle{
@@ -578,12 +551,7 @@
         display: flex;
         align-items: center;
         gap: 1rem;
-    }
-
-    .inputTitle{
-        font-weight: bold;
-        /* margin-bottom: 1rem; */
-    }    
+    }  
 
     button {
         background: none;
@@ -603,16 +571,6 @@
         padding: 0.5rem;
     }
 
-    form label:focus-within{
-        border: 1px solid var(--border_interactive_hover)
-    }
-    form label:not(.saveButton):hover{
-        border: 1px solid var(--border_interactive_hover)
-    }
-    input:not(.saveButton):focus{
-        outline: none;
-    }
-
     .pInfGrid{
         display: grid;
         grid-template-columns: 1fr 1fr;
@@ -620,56 +578,11 @@
         margin-bottom: 2rem;
     }
 
-    .accInputs, .saveButton{
-        position: relative;
-        display: block;
-        border: 1px solid var(--border_interactive_default);
-        background-color: var(--app_bg);
-        border-radius: 5px;
-    }
-
-    .saveButton{
-        display: flex;
-        /* font-size: 2rem; */
-        border: none;
-        background-color: var(--solid_bg);
-        color: white;
-        padding: 0.5rem;
-        justify-content: center;
-        align-items: center;
-        justify-self: center;
-        cursor: pointer;
-        /* margin: 5px; */
-        width: 10rem;
-    }
-
-    .saveButton button{
-        color: var(--text_high_contrast);
-    }
-
-    .saveButton:not(.disabledButton):hover{
-        background-color: var(--solid_bg_hover);
-        color : var(--light_text_high_contrast);
-    }
-
-    .saveButton:not(.disabledButton) button:hover{
-        color: var(--light_text_high_contrast);
-    }
-
-    .disabledButton{
-        background-color: var(--subtle_app_bg);
-        cursor: default;
-    }
-    
-    .disabledButton button{
-        color: var(--light_text_low_contrast);
-        cursor: default;
-    }
-
     main{
-        padding: 1rem;
+        padding: 3rem 3rem 0 3rem;
         margin-left: 18rem;
         width: calc(100% - 18rem);
+        background-color: var(--seasalt);
         position:relative;
     }
 

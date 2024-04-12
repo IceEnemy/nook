@@ -3,7 +3,7 @@ import {writable} from 'svelte/store';
 import {auth, db, storage, rtdb} from '$lib/firebase/firebase.js'
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
 import { doc, setDoc, serverTimestamp, deleteDoc, updateDoc, arrayUnion, arrayRemove, addDoc, collection} from 'firebase/firestore';
-import { get, push, ref, set } from 'firebase/database';
+import { get, push, ref, set, remove } from 'firebase/database';
 
 
 //Store to keep track of the user's data, whenever the database is updated, update the store as well.
@@ -308,176 +308,203 @@ function updateNoteFromPath(path, op){
 }
 
 export const updateNoteStore = {
-    newNote: async (title, path = [], type) => {
-        // loadingState(true);
+    // newNote: async (title, path = [], type) => {
+    //     // loadingState(true);
 
-        const user = auth.currentUser;
-        // try{
-            console.log('3')
-            const userRef = doc(db, 'users', user.uid);
-            console.log('5')
-            if(type == 'note'){
-                const noteDB = ref(rtdb);
-                console.log('1')
-                // console.log(authStore.data.notes)
-                console.log('2')
-                const newNoteRef = push(noteDB)
-                const noteId = newNoteRef.key;
-                console.log(noteId)
-                const dataToSetToStore = {
-                    noteId,
-                    title,
-                    type,
-                    owner: user.uid,
-                    invitedUsers: [user.uid],
-                    permission: 'invite',
-                    created: Date.now(),
-                    lastEdited: Date.now(),
-                }
+    //     const user = auth.currentUser;
+    //     try{
+    //         console.log('3')
+    //         const userRef = doc(db, 'users', user.uid);
+    //         console.log('5')
+    //         if(type == 'note'){
+    //             const noteDB = ref(rtdb);
+    //             console.log('1')
+    //             // console.log(authStore.data.notes)
+    //             console.log('2')
+    //             const newNoteRef = push(noteDB)
+    //             const noteId = newNoteRef.key;
+    //             console.log(noteId)
+    //             const dataToSetToStore = {
+    //                 noteId,
+    //                 title,
+    //                 type,
+    //                 owner: user.uid,
+    //                 invitedUsers: [user.uid],
+    //                 permission: 'invite',
+    //                 created: Date.now(),
+    //                 lastEdited: Date.now(),
+    //             }
 
-                const noteUpdate = updateNoteFromPath(path, (note) => {
-                    if(note.find(note => note.noteId == noteId)){
-                        console.log("note exists")
-                        throw new Error('Note already exists');
-                    }
-                    note.push(dataToSetToStore)
-                })
+    //             const noteUpdate = updateNoteFromPath(path, (note) => {
+    //                 if(note.find(note => note.noteId == noteId)){
+    //                     console.log("note exists")
+    //                     throw new Error('Note already exists');
+    //                 }
+    //                 note.push(dataToSetToStore)
+    //             })
 
-                await updateDoc(userRef, {
-                    notes: noteUpdate
-                })
+    //             await updateDoc(userRef, {
+    //                 notes: noteUpdate
+    //             })
 
-            }
-            else if(type == 'folder'){
+    //         }
+    //         else if(type == 'folder'){
 
-                const dataToSetToStore = {
-                    noteId : title,
-                    title,
-                    type,
-                    owner: user.uid,
-                    invitedUsers: [user.uid],
-                    permission: 'invite',
-                    notes: [],
-                    created: Date.now(),
-                    lastEdited: Date.now(),
-                }
-                // const noteUpdate = updateNoteFromPath(path, (note) => {
-                //     note.push(dataToSetToStore)})
+    //             const dataToSetToStore = {
+    //                 noteId : title,
+    //                 title,
+    //                 type,
+    //                 owner: user.uid,
+    //                 invitedUsers: [user.uid],
+    //                 permission: 'invite',
+    //                 notes: [],
+    //                 created: Date.now(),
+    //                 lastEdited: Date.now(),
+    //             }
+    //             // const noteUpdate = updateNoteFromPath(path, (note) => {
+    //             //     note.push(dataToSetToStore)})
 
-                    const noteUpdate = updateNoteFromPath(path, (note) => {
-                        if(note.find(note => note.noteId == dataToSetToStore.noteId)){
-                            console.log("note exists")
-                            throw new Error('Folder already exists');
-                            return
-                        }
-                        note.push(dataToSetToStore)
-                    })
+    //                 const noteUpdate = updateNoteFromPath(path, (note) => {
+    //                     if(note.find(note => note.noteId == dataToSetToStore.noteId)){
+    //                         console.log("note exists")
+    //                         throw new Error('Folder already exists');
+    //                         return
+    //                     }
+    //                     note.push(dataToSetToStore)
+    //                 })
     
-                    await updateDoc(userRef, {
-                        notes: noteUpdate
-                    })
-            }
-            // window.location = window.location + '#' + noteId;
-        // }
-        // catch{
-        //     let errorMessage = 'Note creation failed';
-        //     loadingState(false);
-        //     throw new Error(errorMessage);
-        // }
-        // loadingState(false);
+    //                 await updateDoc(userRef, {
+    //                     notes: noteUpdate
+    //                 })
+    //         }
+    //         // window.location = window.location + '#' + noteId;
+    //     }
+    //     catch{
+    //         let errorMessage = 'Note creation failed';
+    //         loadingState(false);
+    //         throw new Error(errorMessage);
+    //     }
+    //     loadingState(false);
         
-    },
-    permission: async (noteId, path, permission) => {
-        loadingState(true);
-
+    // },
+    addNote: async (title, type, srcFolderId ='') => {
         const user = auth.currentUser;
-        try{
-            const location = "notes"+path;
-            const userRef = doc(db, 'users', user.uid);
-            const noteRef = doc(userRef, location, noteId);
-            await setDoc(
-                noteRef,
-                {permission},
-                { merge: true }
-            )
-        }
-        catch{
-            let errorMessage = 'Permission update failed';
-            loadingState(false);
-            throw new Error(errorMessage);
-        }
-        loadingState(false);
-    },
-    deleteNote: async (noteId, path) => {
-        loadingState(true);
+        
+        let noteId;
+        let dataToSetToStore;
+        let firebaseRef
 
-        const user = auth.currentUser;
-        try{
-            const location = "notes"+path;
-            const userRef = doc(db, 'users', user.uid);
-            const noteRef = doc(userRef, location, noteId);
-            await deleteDoc(noteRef);
-        }
-        catch{
-            let errorMessage = 'Note deletion failed';
-            loadingState(false);
-            throw new Error(errorMessage);
-        }
-        loadingState(false);
-    },
-    updateTitle: async (noteId, path, title) => {
-        loadingState(true);
-
-        const user = auth.currentUser;
-        try{
-            const location = "notes"+path;
-            const userRef = doc(db, 'users', user.uid);
-            const noteRef = doc(userRef, location, noteId);
-            await setDoc(
-                noteRef,
-                {title},
-                { merge: true }
-            )
-        }
-        catch{
-            let errorMessage = 'Title update failed';
-            loadingState(false);
-            throw new Error(errorMessage);
-        }
-        loadingState(false);
-    },
-    inviteUser: async (noteId, path, email) => {
-        loadingState(true);
-
-        const user = auth.currentUser;
-        try{
-            const location = "notes"+path;
-            const userRef = doc(db, 'users', user.uid);
-            const noteRef = doc(userRef, location, noteId);
-            const noteData = (await noteRef.get()).data();
-            const invitedUsers = noteData.invitedUsers;
-            const invitedUserRef = doc(db, 'users', email);
-            const invitedUserData = (await invitedUserRef.get()).data();
-            if(invitedUserData === undefined){
-                throw new Error('User not found');
+        if(type == 'note'){
+            const noteDB = ref(rtdb);
+            const newNoteRef = push(noteDB);
+            noteId = newNoteRef.key;
+            firebaseRef = doc(db,'notes', noteId);
+            dataToSetToStore = {
+                title,
+                type,
+                owner: user.uid,
+                invitedUsers: [user.uid],
+                permission: 'invite',
+                created: Date.now(),
+                lastEdited: Date.now(),
             }
-            if(invitedUsers.includes(email)){
-                throw new Error('User already invited');
-            }
-            invitedUsers.push(email);
             await setDoc(
-                noteRef,
-                {invitedUsers},
+                firebaseRef,
+                dataToSetToStore,
                 { merge: true }
             )
         }
-        catch{
-            let errorMessage = 'User invitation failed';
-            loadingState(false);
-            throw new Error(errorMessage);
+        else if(type == 'folder'){
+            firebaseRef = collection(db, 'folders');
+            dataToSetToStore = {
+                title,
+                type,
+                owner: user.uid,
+                invitedUsers: [user.uid],
+                permission: 'invite',
+                notes: [],
+                created: Date.now(),
+                lastEdited: Date.now(),
+            }
+            const folderLocation = await addDoc(firebaseRef, dataToSetToStore);
+            noteId = folderLocation.id;
         }
-        loadingState(false);
+
+        
+        
+        // dataToSetToStore.noteId = noteId;
+        const refData = {
+            noteId,
+            type
+        }
+        if(srcFolderId){
+            const folderRef = doc(db, 'folders', srcFolderId);
+            await updateDoc(
+                folderRef,
+                {notes: arrayUnion(refData)}
+            )
+        }
+        else{
+            const userRef = doc(db, 'users', user.uid);
+            await updateDoc(
+                userRef, 
+                {notes: arrayUnion(refData)}
+            )
+        }
+
     },
+    deleteNote: async (noteId, type, srcFolderId = '') => {
+        const user = auth.currentUser;
+        const userRef = doc(db, 'users', user.uid);
+        let noteRef;
+        let rtdbRef;
+        if(type == 'note'){
+            noteRef = doc(db, 'notes', noteId);
+            rtdbRef = ref(rtdb, noteId);
+        }
+        else if(type == 'folder'){
+            noteRef = doc(db, 'folders', noteId);
+        }
+        await deleteDoc(noteRef);
+        if(rtdbRef){
+            await remove(rtdbRef);
+        }
+        if(srcFolderId){
+            const folderRef = doc(db, 'folders', srcFolderId);
+            await updateDoc(
+                folderRef,
+                {notes: arrayRemove({noteId, type})}
+            )
+        }
+        else{
+            await updateDoc(
+                userRef,
+                {notes: arrayRemove({noteId, type})}
+            )
+        }
+    },
+    updateTitle: async (noteId, type, newTitle) => {
+        let noteRef;
+        if(type == 'note'){
+            noteRef = doc(db, 'notes', noteId);
+        }
+        else if(type == 'folder'){
+            noteRef = doc(db, 'folders', noteId);
+        }
+        await updateDoc(
+            noteRef,
+            {title: newTitle}
+        )
+    
+    }
+}
+
+export function formatDate(timestamp){
+    let date = new Date(timestamp);
+    let day = date.getDate().toString().padStart(2, '0');
+    let month = (date.getMonth()+1).toString().padStart(2, '0');
+    let year = date.getFullYear();
+    return `${day}/${month}/${year}`;
 }
 
 

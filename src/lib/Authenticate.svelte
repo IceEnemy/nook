@@ -427,21 +427,21 @@
         /* max-width: 100%; */
         margin: 0 auto;
     }
-    form label {
-        position: relative;
-        border: 1px solid var(--border_interactive_default);
-        border-radius: 5px;
+    /* form label { */
+        /* position: relative; */
+        /* border: 1px solid var(--border_interactive_default); */
+        /* border-radius: 5px; */
         /* background-color: white; */
-    }
+    /* } */
 
-    form label:focus-within{
+    /* form label:focus-within{
         border: 1px solid var(--border_interactive_hover)
     }
     form label:hover{
         border: 1px solid var(--border_interactive_hover)
-    }
+    } */
 
-    form input{
+    /* form input{
         width: 100%;
         border: none;
         background : transparent;
@@ -449,11 +449,11 @@
         font-size: 1rem;
         font-family:Poppins, sans-serif;
         padding: 1rem;
-    }
+    } */
 
-    form input::placeholder{
+    /* form input::placeholder{
         color: var(--border_interactive_default);
-    }
+    } */
 
     form input:focus{
         outline: none;
