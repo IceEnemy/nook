@@ -371,7 +371,7 @@
                     <h2>Are you sure you want to delete this note?</h2>
                     <form class = "popupForm">
                         <label class="saveButton">
-                            <button on:click={() => updateNoteStore.deleteNote(editDetail, newPopup = 'deleteNote' ? 'note' : 'folder', ref)}>Confirm</button>
+                            <button on:click={() => {updateNoteStore.deleteNote(editDetail, newPopup == 'deleteNote' ? 'note' : 'folder', ref); newPopup = ''; noteName = '';}}>Confirm</button>
                         </label>
                     </form>
 

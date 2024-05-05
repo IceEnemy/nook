@@ -46,8 +46,10 @@
 
 
     --imperial_red: #FD4040;
+    --dark_imperial_red: #D22E2E;
     --imperial_red_transparent: rgba(253, 64, 64, 0.5);
     --yellow_green: #B0E64C;
+    --dark_yellow_green: #9AC843;
     --yellow_green_transparent: rgba(176, 230, 76, 0.5);
 }
 
@@ -108,6 +110,32 @@ form label {
     align-items: center;
 }
 
+.changeInput > span:not(.inputTitle){
+    display: block;
+    margin: 0 auto 1rem auto;
+    text-align: center;
+}
+
+.popupDiv{
+    width: 100%;
+    /* gap: 1rem; */
+    /* text-align: center; */
+}
+
+.doublePopupButtons{
+    gap: 1rem;
+    width: 100%;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+}
+
+.popupDiv > span:not(.inputTitle){
+    /* justify-self: center; */
+    display: block;
+    margin: 0 auto 1rem auto;
+    text-align: center;
+}
+
 form label:focus-within{
     border: 1px solid var(--border_interactive_hover)
 }
@@ -140,13 +168,15 @@ input:not(.saveButton):focus{
     border: 1px solid var(--border_interactive_default);
     background-color: var(--app_bg);
     border-radius: 5px;
+    /* width: 100%; */
 }
 
 .saveButton{
+    border-radius: 15px;
     display: flex;
     /* font-size: 2rem; */
     /* border: none; */
-    background-color: var(--solid_bg);
+    background-color: var(--linen);
     color: white;
     padding: 0.5rem;
     justify-content: center;
@@ -161,6 +191,10 @@ input:not(.saveButton):focus{
     width: 100%;
 }
 
+.changeInput h2{
+    align-self: center;
+}
+
 .saveButton button{
     color: var(--text_high_contrast);
     border: none;
@@ -171,7 +205,7 @@ input:not(.saveButton):focus{
     font-size: 1rem;
 }
 
-.saveButton:not(.disabledButton):hover{
+.saveButton:not(.disabledButton, .warnButton):hover{
     background-color: var(--solid_bg_hover);
     color : var(--light_text_high_contrast);
 }
@@ -190,6 +224,25 @@ input:not(.saveButton):focus{
     cursor: default;
 }
 
+.warnButton{
+    background-color: var(--imperial_red);
+    border: var(--imperial_red);
+    color: var(--light_text_high_contrast);
+
+}
+
+.warnButton button{
+    color: var(--light_text_high_contrast);
+
+}
+
+.warnButton:hover{
+    background-color: var(--dark_imperial_red);
+}
+
+.warnButton button:hover{
+    background-color: var(--dark_imperial_red);
+}
 .changePopups{
     position: absolute;
     top: 0;
@@ -207,6 +260,7 @@ input:not(.saveButton):focus{
 .changeInput{
     display: flex;
     flex-direction: column;
+    width: 500px;
     gap: 1rem;
     padding: 2rem;
     background: var(--seasalt);
@@ -255,7 +309,10 @@ form input:focus{
     display: none;
 }
 
-
+.checkmark{
+    align-self: center;
+    color: var(--yellow_green)
+}
 
 
 button{
@@ -316,6 +373,7 @@ body::-webkit-scrollbar-thumb{
 
 .error{
     color: var(--error);
+    align-self: center;
 }
 
 .reqSatisfied, .reqNotMet{

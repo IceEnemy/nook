@@ -11,7 +11,7 @@
 
     onMount(() => {
         unsubscribe = page.subscribe(() => {
-            showModal.set(false);
+            showModal.set(true);
             userReauthenticated.set(false);
         });
     });
@@ -62,7 +62,7 @@
     // let profilePic = '';
     let accSelect = 'Account'
 
-    let AccPopup = '';
+    let AccPopup = 'passwordInput';
     // onMount(() => {
     //     const unsubscribe = authStore.subscribe((val) => {
     //         username = val.data.username || 'Loading..';
@@ -256,7 +256,7 @@
                     </label>
                     <label>
                         <button on:click={authHandlers.logout}></button>
-                        <span><i class="fa-solid fa-right-from-bracket"></i> Logout</span>
+                        <span class="error"><i class="fa-solid fa-right-from-bracket error"></i> Logout</span>
                     </label>
                 </div>
                 <div class="accDetails">
@@ -351,16 +351,13 @@
                 <div class="changePopups" transition:fade={{ duration: 200 }} on:click={closeAccPopup} on:keydown={(event) => {escAccPopup(event)}} tabindex="-1" role="dialog" aria-label="Change Popup">
                 <!-- Change Email Popup -->
                     <div class="changeInput" transition:scale={{ start:0.8, end:1,duration: 200}} on:click|stopPropagation tabindex="0" bind:this={accPopupModal}>
-                        {#if errorPopup !== ''}
-                            <p class="error">{errorPopup}</p>
-                        {/if}
                         {#if AccPopup === 'email' || AccPopup === 'password' || AccPopup === 'delete'}
                             <h2>Enter your password</h2>
                             <form class = "popupForm">
-                                <div>
-                                    <span class="inputTitle">Password</span>
+                                <div class='popupDiv'>
+                                    <!-- <span class="inputTitle">Password</span> -->
                                     <label class = "accInputs">
-                                        <input type="password" placeholder="Enter current password" bind:value={password}>
+                                        <input type="password" placeholder="Type in your password!" bind:value={password}>
                                         
                                     </label>
                                 </div>
@@ -373,7 +370,7 @@
                         {:else if AccPopup === 'emailInput'}
                             <h2>Change Email</h2>
                             <form class = "popupForm">
-                                <div>
+                                <div class='popupDiv'>
                                     <span class="inputTitle">New Email</span>
                                     <label class = "accInputs">
                                         <input type="email" placeholder="Enter new email" bind:value={newEmail}>
@@ -390,14 +387,14 @@
                         {:else if AccPopup === 'passwordInput'}
                             <h2>Change Password</h2>
                             <form class = "popupForm">
-                                <div>
+                                <div class='popupDiv'>
                                     <span class="inputTitle">New Password</span>
                                     <label class = "accInputs">
                                         <input type="password" placeholder="Enter new password" bind:value={newPassword} on:focus={handlePassFocus} on:blur={handlePassBlur}>
                                         
                                     </label>
                                 </div>
-                                <div>
+                                <div class='popupDiv'>
                                     <span class="inputTitle">Confirm New Password</span>
                                     <label class = "accInputs">
                                         <input type="password" placeholder="Confirm new password" bind:value={confirmNewPassword}>
@@ -468,24 +465,43 @@
                         {:else if AccPopup === 'deleteInput'}
                             <h2>Delete Account</h2>
                             <form class = "popupForm">
-                                <div>
-                                    <span class="inputTitle">Are you sure you want to delete your account? Type your email</span>
+                                <div class='popupDiv'>
+                                    <span>Are you sure you want to delete your account? Type your email to proceed!</span>
                                     <label class = "accInputs">
                                         <input type="email" placeholder="Enter your email" bind:value={delEmail}>
                                     </label>
                                 </div>
-                                <label class="saveButton">
-                                    <button on:click={deleteAccount}>Delete Account</button>
-                                </label>
+                                <div class = 'doublePopupButtons'>
+                                    <label class="saveButton warnButton">
+                                        <button on:click={deleteAccount}>Delete Account</button>
+                                    </label>  
+                                    <label class="saveButton">
+                                        <button on:click={closeAccPopup}>Cancel</button>
+                                    </label>  
+                                </div>
+                                
                             </form>
 
                         {:else if AccPopup === 'emailSent'}
+                            <span class="ion--checkmark-outline big-icon checkmark"></span>
+
                             <h2>Email Sent</h2>
-                            <p>An email has been sent to your new email address. Please verify your email address to complete the change!</p>
+                            <span>An email has been sent to your new email address. Please verify your email address to complete the change!</span>
+                            <label class="saveButton">
+                                <button on:click={closeAccPopup}>Close</button>
+                            </label>  
 
                         {:else if AccPopup === 'passwordChanged'}
+                            <span class="ion--checkmark-outline big-icon checkmark"></span>
                             <h2>Password Changed</h2>
-                            <p>Your password has been changed successfully!</p>
+                            <span>Your password has been changed successfully!</span>
+                            <label class="saveButton">
+                                <button on:click={closeAccPopup}>Close</button>
+                            </label> 
+                        {/if}
+
+                        {#if errorPopup !== ''}
+                            <p class="error">{errorPopup}</p>
                         {/if}
                     </div>
                 </div>
@@ -504,7 +520,7 @@
 
 <style>
     .reqPopup{
-        transform: translate(70%, -15%);
+        transform: translate(130%, -15%);
     }
     .delAcc{
         margin-top: auto;
@@ -605,25 +621,26 @@
         /* transition-duration: 300ms; */
         transition-timing-function: ease-in-out;
         display: inline-block;
-        background-color: var(--solid_bg);
+        background-color: var(--seasalt);
         padding: 10px 10px 10px 20px;
         margin-left: 2rem;
-        /* border-radius: 10px 0px 0px 10px;  */
+        border-radius: 10px 0px 0px 10px; 
         font-size: 1rem;
         cursor: pointer;
+
         /* clip-path: polygon(0 0, 100% 0, 100% 100%, 20% 100%); */
         /* clip-path: polygon(0 0, 100% 0%, 100% 100%, 0% 100%, 10% 50%); */
     }
 
     .accButtons label:not(.selected):hover {
-        background-color: var(--solid_bg_hover);
-        color: var(--light_text_high_contrast);
+        background-color: var(--dim_linen);
+        /* color: var(--light_text_high_contrast); */
         margin-left: 0;
     }
 
     .accButtons label.selected{
-        background-color: var(--navbar_bg);
-        color: var(--light_text_high_contrast);
+        background-color: var(--almond);
+        /* color: var(--light_text_high_contrast); */
         margin-left: 5rem;
         /* transform: translateX(30px); */
         cursor: default;
@@ -635,7 +652,7 @@
         /* gap: 1rem; */
         /* padding: 2rem 0rem 1rem 1rem; */
         padding-top: 2rem;
-        background: var(--border_interactive_hover);
+        background: var(--seasalt);
         /* background: transparent; */
         /* border-radius: 5px; */
         width: 25%;
@@ -662,7 +679,7 @@
         flex-direction: column;
         gap: 2rem;
         padding: 3rem;
-        background: var(--border_interactive_default);
+        background: var(--default_white);
         /* border-radius: 5px; */
         width: 75%;
         height: 100%;
@@ -695,7 +712,7 @@
 
     .accountSettings{
         color: var(--text_high_contrast);
-        z-index: 2;
+        z-index: 90000;
         display: flex;
         flex-direction: row;
         /* align-items: center;
@@ -710,7 +727,7 @@
         top: 50%;
         left: 50%;
         transform: translate(-50%, -50%);
-        border-radius: 5px;
+        border-radius: 30px;
         overflow: hidden;
     }
 

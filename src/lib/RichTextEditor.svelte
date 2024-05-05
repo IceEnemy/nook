@@ -82,7 +82,7 @@
         });
 
         var firepadUserList = FirepadUserList.fromDiv(firepadRef.child('users'),
-            document.getElementById('userlist'), userId);
+            document.getElementById('userlist'), userId, username);
 
         //// Initialize contents.
         firepad.on('ready', function() {

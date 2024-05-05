@@ -248,7 +248,7 @@
     word-wrap: normal;
     line-height: inherit;
     color: inherit;
-    z-index: 2;
+    z-index: 0;
     position: relative;
     overflow: visible;
     -webkit-tap-highlight-color: transparent;

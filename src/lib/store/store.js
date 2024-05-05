@@ -2,7 +2,7 @@ import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, se
 import {writable} from 'svelte/store';
 import {auth, db, storage, rtdb} from '$lib/firebase/firebase.js'
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { doc, setDoc, serverTimestamp, deleteDoc, updateDoc, arrayUnion, arrayRemove, addDoc, collection} from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, deleteDoc, updateDoc, arrayUnion, arrayRemove, addDoc, collection, getDoc} from 'firebase/firestore';
 import { get, push, ref, set, remove } from 'firebase/database';
 
 
@@ -464,6 +464,18 @@ export const updateNoteStore = {
         }
         else if(type == 'folder'){
             noteRef = doc(db, 'folders', noteId);
+            const snapshot = await getDoc(noteRef);
+            const noteRefData = snapshot.data();
+            console.log(noteId ,':', noteRefData.notes)
+            // console.log(noteRef)
+            const size = noteRefData.notes.length;
+            for(let i = 0; i < size; i++){
+                await updateNoteStore.deleteNote(
+                    noteRefData.notes[i].noteId,
+                    noteRefData.notes[i].type,
+                    noteId
+                )
+            }
         }
         await deleteDoc(noteRef);
         if(rtdbRef){
