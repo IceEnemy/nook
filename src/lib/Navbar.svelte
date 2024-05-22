@@ -30,6 +30,7 @@
     function navigateTo(section) {
         console.log(`Navigating to ${section}`);
         // Use goto function here if needed
+        goto(`/app/${section.toLowerCase()}`);
     }
 
 </script>

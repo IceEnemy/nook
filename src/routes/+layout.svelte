@@ -83,7 +83,7 @@
     .mainContainer{
         height: 100%;
         width: 100%;
-        background: var(--seasalt);
+        background: var(--default_white);
         color: var(--van_dyke);
         position: relative;
         align-items: center;

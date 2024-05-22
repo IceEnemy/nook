@@ -11,7 +11,7 @@
 
     onMount(() => {
         unsubscribe = page.subscribe(() => {
-            showModal.set(true);
+            showModal.set(false);
             userReauthenticated.set(false);
         });
     });
@@ -62,7 +62,7 @@
     // let profilePic = '';
     let accSelect = 'Account'
 
-    let AccPopup = 'passwordInput';
+    let AccPopup = '';
     // onMount(() => {
     //     const unsubscribe = authStore.subscribe((val) => {
     //         username = val.data.username || 'Loading..';
@@ -598,7 +598,7 @@
         padding: 3rem 3rem 0 3rem;
         margin-left: 18rem;
         width: calc(100% - 18rem);
-        background-color: var(--seasalt);
+        background-color: var(--default_white);
         position:relative;
     }
 
