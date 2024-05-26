@@ -110,7 +110,7 @@
 </script>
 
 <div id="noteContainer">
-  <div id="userlist"></div>
+  <!-- <div id="userlist"></div> -->
   <div id="firepad"></div>
 </div>
 
@@ -128,6 +128,6 @@
       /* width: 175px; */
     }
     #firepad {
-      position: absolute; left: 175px; top: 0px; bottom: 0; right: 0;
+      position: absolute; left: 0px; top: 0px; bottom: 0; right: 0;
     }
   </style>

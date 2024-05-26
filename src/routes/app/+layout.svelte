@@ -6,6 +6,7 @@
     import Navbar from '$lib/Navbar.svelte';
     import {fade, scale} from 'svelte/transition';
     import {authStore, uploadProfilePicture} from '$lib/store/store.js';
+    import {timer} from '$lib/store/timer.js'
 
     let unsubscribe;
 

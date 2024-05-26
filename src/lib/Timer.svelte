@@ -3,13 +3,31 @@
     import { writable } from 'svelte/store';
     import CircularProgress from '$lib/CircularProgress.svelte';
 
+    import {doc, addDoc, collection, setDoc, getDoc} from 'firebase/firestore';
+    import {db, auth} from '$lib/firebase/firebase.js';
+    import {authStore} from '$lib/store/store.js';   
+    import {isRunning, timerId, timer, globalWorkTime, globalBreakTime, lapLimit, lapCount, startTimer, stopTimer, resetTimer, timerState, updateLapCount, updateTimerTitle, updateTime} from '$lib/store/timer.js';
+
+    export let id;
     export let name = 'Pomodoro Timer';
     export let lapAmount = 2;
-    export let state = 'paused';
+    // export let state = 'paused';
+    export let workTime = 1500;
+    export let breakTime = 300;
+
     let lapProgress;
 
     let inputElement;
     const inputWidth = writable('auto');
+
+    function handleStart(){
+
+        timerId.set(id);
+        globalWorkTime.set(workTime);
+        globalBreakTime.set(breakTime);
+        lapLimit.set(lapAmount);
+        startTimer();
+    }
 
     function adjustInputWidth() {
         if (inputElement) {
@@ -35,6 +53,7 @@
     async function handleSubmit(event, type) {
     event.preventDefault();
     const input = event.target.querySelector('input').value.trim();
+    const inputElement = event.target.querySelector('input');
 
         function parseInputToSeconds(input) {
             // Check if input is an integer
@@ -61,11 +80,12 @@
             return;
         }
 
+        inputElement.blur(); // Blur the input field
         await saveTimeSettings(type, parsedSeconds);
     }
 
-    let workInput = parseSeconds(1500);
-    let breakInput = parseSeconds(300);
+    $: workInput = parseSeconds(workTime);
+    $: breakInput = parseSeconds(breakTime);
 
     const showWorkPlaceholder = writable(false);
     const showBreakPlaceholder = writable(false);
@@ -89,28 +109,49 @@
     $: workInputDisplay = $showWorkPlaceholder ? '' : workInput;
     $: breakInputDisplay = $showBreakPlaceholder ? '' : breakInput;
 
+    let enterPressed = false;
+
     async function handleKeyDown(event) {
         if (event.key === 'Enter') {
             event.preventDefault();
+            enterPressed = true;
             saveName();
             inputElement.blur();
         }
     }
 
-    function handleLaps(op) {
+    async function handleBlur() {
+        if (!enterPressed) {
+            saveName();
+        }
+        enterPressed = false; // Reset flag after blur event
+    }
+
+    async function handleLaps(op) {
         if (op === 'minus' && lapAmount > 2) {
+            await updateLapCount(id,-1);
             lapAmount--;
         } else if (op === 'plus' && lapAmount < 5) {
+            await updateLapCount(id,1);
             lapAmount++;
         }
     }
 
-    async function saveTimeSettings(type) {
+    async function saveTimeSettings(type, time) {
+
+        if (type === 'working') {
+            workTime = time;
+            await updateTime(time,id,'workTime')
+        } else if (type === 'break') {
+            breakTime = time;
+            await updateTime(time,id,'breakTime')
+        }
         console.log(`Saving time settings for ${type}`);
         
     }
 
     async function saveName() {
+        await updateTimerTitle(name, id);
         console.log(`Saving name: ${name}`);
     }
 
@@ -124,22 +165,30 @@
 </script>
 
 <div class="timerBody">
-    <input type="text" class="timerName" bind:value={name} bind:this={inputElement} style="width: {$inputWidth}" on:input={adjustInputWidth} on:blur={saveName} on:keydown={handleKeyDown}>
+    <input type="text" class="timerName" bind:value={name} bind:this={inputElement} style="width: {$inputWidth}" on:input={adjustInputWidth} on:blur={handleBlur} on:keydown={handleKeyDown}>
     <h2>First Lap</h2>
     <div class="lapsContainer">
         <button class="lapButton" on:click={() => { handleLaps('minus') }}>-</button>
         <div class="laps" style="gap: calc(30px - 5px * ({lapAmount} - 2))">
-            {#each Array.from({ length: lapAmount }) as _, i}
-                <div class="lapCircle"></div>
-            {/each}
+            {#if id === $timerId}
+                {#each Array.from({ length: lapAmount }) as _, i}
+                    <div class="lapCircle" style="background-color: {i < $lapCount ? 'var(--chamoisee)' : i === $lapCount ? 'var(--buff)' : 'var(--dim_linen)'};"></div>
+                {/each}
+            {:else}
+                {#each Array.from({ length: lapAmount }) as _, i}
+                    <div class="lapCircle" style="background-color: var(--dim_linen)"></div>
+                {/each}
+            {/if}
         </div>
         <button class="lapButton" on:click={() => { handleLaps('plus') }}>+</button>
     </div>
-    <CircularProgress />
+
+    <CircularProgress type="working" totalSeconds={workTime} seconds={workTime} chosen={$timerId === id}/>
+
     <div class="circularContainer">
-        <button class="circularButton"><span class="iconamoon--restart icon"></span></button>
-        <button class="circularButton">
-            {#if state === 'running'}
+        <button class="circularButton" on:click={resetTimer}><span class="iconamoon--restart icon"></span></button>
+        <button class="circularButton" on:click={() => $isRunning? stopTimer() : handleStart()}>
+            {#if $isRunning && $timerId === id} 
                 <span class="f7--pause-fill icon"></span>
             {:else}
                 <span class="ph--play-fill icon"></span>
@@ -151,7 +200,7 @@
             <div class="minTitle">
                 <h3>Work</h3>
             </div>
-            <form on:submit={handleSubmit}>
+            <form on:submit={() => handleSubmit(event,'working')}>
                 <input type="text" bind:value={workInputDisplay} placeholder={workInput} class="timerMins" on:focus={handleWorkFocus} on:blur={handleWorkBlur}>
             </form>
         </div>
@@ -159,7 +208,7 @@
             <div class="minTitle">
                 <h3>Break</h3>
             </div>
-            <form>
+            <form on:submit={() => handleSubmit(event,'break')}>
                 <input type="text" bind:value={breakInputDisplay} placeholder={breakInput} class="timerMins" on:focus={handleBreakFocus} on:blur={handleBreakBlur}>
             </form>
         </div>
@@ -255,7 +304,7 @@
     }
 
     .lapCircle {
-        background-color: var(--desert_sand);
+        /* background-color: var(--desert_sand); */
         border-radius: 50%;
         height: 32px;
         width: 32px;

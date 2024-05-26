@@ -364,7 +364,7 @@
                     
                         <label class="saveButton">
 
-                            <button on:click={() => updateNoteStore.updateTitle(editDetail,newPopup === 'titleNote' ? 'note' : 'folder', noteName)}>Confirm</button>
+                            <button on:click={() => {updateNoteStore.updateTitle(editDetail,newPopup === 'titleNote' ? 'note' : 'folder', noteName); newPopup = ''; noteName = ''; location.reload()}}>Confirm</button>
                         </label>
                     </form>
                 {:else if newPopup === 'deleteNote' || newPopup === 'deleteFolder'}
