@@ -104,6 +104,17 @@ export const authHandlers = {
                 dataToSetToStore,
                 { merge: true }
             )
+            const timerRef = doc(db, 'users/' + user.uid + '/timers');
+
+            for(let i=0; i<3; i++){
+                let timerData = {
+                    title: 'Timer ' + (i+1),
+                    workTime: 1200,
+                    breakTime: 300,
+                    laps: 2
+                }
+                await addDoc(timerRef, timerData);
+            }
         } 
         catch (error) {
             let errorMessage = "Signup error: An unexpected error occurred.";
@@ -400,6 +411,7 @@ export const updateNoteStore = {
             noteId = newNoteRef.key;
             firebaseRef = doc(db,'notes', noteId);
             dataToSetToStore = {
+                parent: srcFolderId,
                 title,
                 type,
                 owner: user.uid,
@@ -417,6 +429,7 @@ export const updateNoteStore = {
         else if(type == 'folder'){
             firebaseRef = collection(db, 'folders');
             dataToSetToStore = {
+                parent: srcFolderId,
                 title,
                 type,
                 owner: user.uid,

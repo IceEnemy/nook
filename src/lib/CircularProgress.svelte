@@ -1,21 +1,41 @@
 <script>
-    export let type = 'work'
-    export let seconds = 900 ;
-    export let totalSeconds = 1200;
+    import { timerState, globalWorkTime, globalBreakTime, timer } from '$lib/store/timer.js';
 
-    let progress = seconds / totalSeconds;
+    export let type = "working";
+    export let totalSeconds;
+    export let seconds;
+    export let chosen = true;
 
-	const angle = 360 * progress
-	
-    let minutes = Math.floor(seconds / 60);
-    let secondsLeft = seconds % 60;
+    // Default values for progress calculation
+    let progress = 1;
+    let angle = 360;
+    let minutes = 0;
+    let secondsLeft = 0;
+    let background = '';
+    let cssVarStyles = '';
 
-	// Adapt the logic according to the approach
-	const	background = `radial-gradient(var(--seasalt) 57%, transparent 45%),
-    conic-gradient(transparent 0deg ${angle}deg, var(--dim_linen) ${angle}deg 360deg),
-    var(--chamoisee)`;
-	
-	$: cssVarStyles = `--background:${background}`
+    function updateProgress() {
+        progress = seconds / totalSeconds;
+        angle = 360 * progress;
+        minutes = Math.floor(seconds / 60);
+        secondsLeft = seconds % 60;
+        background = `radial-gradient(var(--seasalt) 57%, transparent 45%),
+                      conic-gradient(transparent 0deg ${angle}deg, var(--dim_linen) ${angle}deg 360deg),
+                      var(--chamoisee)`;
+        cssVarStyles = `--background:${background}`;
+    }
+
+    // Reactive statement to update values from stores if props are not provided
+    $: {
+
+            if(chosen){
+                type = $timerState;
+                totalSeconds = type === 'working' ? $globalWorkTime : $globalBreakTime;
+                seconds = $timer;
+            }
+            
+        updateProgress();
+    }
 </script>
 
 <style>
@@ -26,8 +46,8 @@
     border-radius: 50%;
     width: 360px;
     height: 360px;
-	transition: all 500ms ease-in;
-	will-change: transform;
+    transition: all 500ms ease-in;
+    will-change: transform;
     align-self: center;
     justify-content: center;
     align-items: center;
@@ -40,13 +60,17 @@ h1 {
 </style>
 
 <div id="progress-circle" style="{cssVarStyles}">
-    {#if type === 'work'}
+    {#if type === 'working'}
         <span class="carbon--book medium-icon"></span>
         <h2>Time to work!</h2>
         <h1>
             {minutes < 10 ? `0${minutes}` : minutes}:{secondsLeft < 10 ? `0${secondsLeft}` : secondsLeft}
         </h1>
     {:else}
-        <h2>Break</h2>
+        <span class="codicon--coffee medium-icon"></span>
+        <h2>Take a break!</h2>
+        <h1>
+            {minutes < 10 ? `0${minutes}` : minutes}:{secondsLeft < 10 ? `0${secondsLeft}` : secondsLeft}
+        </h1>
     {/if}
 </div>

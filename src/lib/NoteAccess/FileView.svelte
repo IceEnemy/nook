@@ -295,7 +295,6 @@
 
 		<div class="folderContainer">
 			<p>Folders</p>
-
 			<div class="folderGrid">
 				{#each filteredFolders as folder}
 					<!-- {#if (searched != '' && folder.title.toLowerCase().includes(searched.toLowerCase())) || searched === ''} -->
@@ -331,12 +330,19 @@
 									<input type="text" placeholder="Folder title" bind:value={noteName} />
 								</label>
 							</div>
-
-							<label
-								class="saveButton
-                        "
-							>
-								<button on:click={() => handleAddNote(noteName, 'folder')}>Confirm</button>
+							<label class="saveButton">
+								<button
+									on:click={() => {
+										updateNoteStore.updateTitle(
+											editDetail,
+											newPopup === 'titleNote' ? 'note' : 'folder',
+											noteName
+										);
+										newPopup = '';
+										noteName = '';
+										location.reload();
+									}}>Confirm</button
+								>
 							</label>
 						</form>
 					{:else if newPopup === 'note'}

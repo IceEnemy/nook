@@ -1,23 +1,58 @@
 <script>
     import Timer from '$lib/Timer.svelte';
+    import {authStore} from '$lib/store/store.js';
+    import {doc, addDoc, collection, setDoc, getDoc, getDocs} from 'firebase/firestore';
+    import {db, auth} from '$lib/firebase/firebase.js';
+
+    let timerArray = [];
+    let timerGot = false;
+
+    async function getTimers(){
+        const user = $authStore.user;
+        const timerCollection = collection(db, 'users', user.uid, 'timers');
+            
+        try {
+            const querySnapshot = await getDocs(timerCollection);
+            timerArray = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            console.log(timerArray); // To verify the fetched data
+        } catch (error) {
+            console.error("Error fetching timers: ", error);
+        }
+        console.log(timerArray);
+        timerGot = true;
+    }
+
+    $: if($authStore.user){
+        getTimers();
+    }
+
 </script>
 
 <div class="header">
     <h1>Pomodoro Timer</h1>
 </div>
 
-<div class="Timers">
-    <Timer/>
-    <Timer/>
-    <Timer/>
-</div>
+{#if timerGot}
 
+    <div class="Timers">
+        {#each timerArray as timer}
+            <Timer id={timer.id} name={timer.title} workTime={timer.workTime} breakTime={timer.breakTime} lapAmount = {timer.lapCount}/>
+        {/each}
+
+<!-- 
+        <Timer/>
+        <Timer/>
+        <Timer/> -->
+
+    </div>
+
+{/if}
 <style>
     .Timers{
         display: flex;
         justify-content: space-around;
         align-items: center;
-        margin-top: 75px;
+        margin-top: 110px;
     }
 
     .header{
