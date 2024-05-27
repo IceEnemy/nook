@@ -1,41 +1,41 @@
-:root{
+:root {
     font-size: 16px;
-    font-family:Poppins, sans-serif;
+    font-family: Poppins, sans-serif;
     --prim_clr: #433633;
     --sec_clr: #5C5552;
     --tert_clr: #8F857D;
     --light_clr: #DECBB7;
-    --lighter_clr:#F7F0F5;
+    --lighter_clr: #F7F0F5;
 
     --app_bg: #FEFDFC;
     --subtle_app_bg: #FCF9F6;
-    --comp_default:#F6EEE7;
+    --comp_default: #F6EEE7;
     --comp_hover: #F0E4D9;
-    --comp_active:#EBDACA;
-    --border_non_interactive:#E4CDB7;
-    --border_interactive_default:#DCBC9F;
-    --border_interactive_hover:#CEA37E;
-    --solid_bg:#AD7F58;
-    --solid_bg_hover:#A07553;
-    --text_low_contrast:#815E46;
-    --text_high_contrast:#3E332E;
-    --light_text_high_contrast:#F6EEE7;
-    --light_text_low_contrast:#9E9895;
+    --comp_active: #EBDACA;
+    --border_non_interactive: #E4CDB7;
+    --border_interactive_default: #DCBC9F;
+    --border_interactive_hover: #CEA37E;
+    --solid_bg: #AD7F58;
+    --solid_bg_hover: #A07553;
+    --text_low_contrast: #815E46;
+    --text_high_contrast: #3E332E;
+    --light_text_high_contrast: #F6EEE7;
+    --light_text_low_contrast: #9E9895;
 
-    --navbar_bg:#493C36;
-    --navbar_bg_darker:#3F3330;
-    --navbar_contrast_text:#B0E64C;
-    --navbar_contrast_text_transparent:rgba(176, 230, 76, 0.5);
+    --navbar_bg: #493C36;
+    --navbar_bg_darker: #3F3330;
+    --navbar_contrast_text: #B0E64C;
+    --navbar_contrast_text_transparent: rgba(176, 230, 76, 0.5);
 
-    --error:#FD4040;
-    --error_transparent:rgba(253, 64, 64, 0.5);
+    --error: #FD4040;
+    --error_transparent: rgba(253, 64, 64, 0.5);
 
-    --default_white:#FEFDFC;
-    --seasalt:#FCF9F6;
-    --linen:#F6EEE7;
-    --dim_linen:#F0E4D9;
-    --almond:#EBDACA;
-    --fawn:#FCB779;
+    --default_white: #FEFDFC;
+    --seasalt: #FCF9F6;
+    --linen: #F6EEE7;
+    --dim_linen: #F0E4D9;
+    --almond: #EBDACA;
+    --fawn: #FCB779;
     --dun: #E4CDB7;
     --desert_sand: #DCBC9F;
     --buff: #CEA37E;
@@ -44,6 +44,7 @@
     --van_dyke: #3E332E;
     --darker_van_dyke: #322925;
     --darker_van_dyke_transparent: rgba(50, 41, 37, 0.1);
+    --light_orange: rgba(252, 218, 187);
 
 
     --imperial_red: #FD4040;
@@ -54,7 +55,7 @@
     --yellow_green_transparent: rgba(176, 230, 76, 0.5);
 }
 
-.searchbar{
+.searchbar {
     /* background-color: transparent;
     border: solid 2px var(--dun);
     border-radius: 100px; */
@@ -64,17 +65,19 @@
 
 .dropdown {
     position: relative;
-    display: inline-block; /* Or 'flex' depending on layout */
+    display: inline-block;
+    /* Or 'flex' depending on layout */
 }
 
 .dropdown-content {
     border-radius: 5px;
-    display: none; /* Initially hidden */
+    display: none;
+    /* Initially hidden */
     position: absolute;
     margin-top: 10px;
     background-color: var(--seasalt);
     min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    box-shadow: 0px 8px 16px 0px rgba(0, 0, 0, 0.2);
     z-index: 1;
 }
 
@@ -91,15 +94,19 @@
     align-items: center;
 }
 
-.dropdown-content button:hover {background-color: var(--linen)}
+.dropdown-content button:hover {
+    background-color: var(--linen)
+}
 
 /* Style adjustments for dropdown when visible */
-.dropdown .dropdown-content { display: block; }
+.dropdown .dropdown-content {
+    display: block;
+}
 
-.inputTitle{
+.inputTitle {
     font-weight: bold;
     /* margin-bottom: 1rem; */
-}  
+}
 
 form label {
     position: relative;
@@ -111,59 +118,64 @@ form label {
     align-items: center;
 }
 
-.changeInput > span:not(.inputTitle){
+.changeInput>span:not(.inputTitle) {
     display: block;
     margin: 0 auto 1rem auto;
     text-align: center;
 }
 
-.popupDiv{
+.popupDiv {
     width: 100%;
     /* gap: 1rem; */
     /* text-align: center; */
 }
 
-.doublePopupButtons{
+.doublePopupButtons {
     gap: 1rem;
     width: 100%;
     display: grid;
     grid-template-columns: 1fr 1fr;
 }
 
-.popupDiv > span:not(.inputTitle){
+.popupDiv>span:not(.inputTitle) {
     /* justify-self: center; */
     display: block;
     margin: 0 auto 1rem auto;
     text-align: center;
 }
 
-form label:focus-within{
-    border: 1px solid var(--border_interactive_hover)
-}
-form label:hover{
+form label:focus-within {
     border: 1px solid var(--border_interactive_hover)
 }
 
-form input{
+form label:hover {
+    border: 1px solid var(--border_interactive_hover)
+}
+
+form input {
     width: 100%;
     border: none;
-    background : transparent;
+    background: transparent;
     color: var(--text_high_contrast);
     font-size: 1rem;
-    font-family:Poppins, sans-serif;
+    font-family: Poppins, sans-serif;
     padding: 1rem;
 }
 
-form label:not(.saveButton):focus-within{
+form label:not(.saveButton):focus-within {
     border: 1px solid var(--border_interactive_hover)
 }
-form label:not(.saveButton):hover{
+
+form label:not(.saveButton):hover {
     border: 1px solid var(--border_interactive_hover)
 }
-input:not(.saveButton):focus{
+
+input:not(.saveButton):focus {
     outline: none;
 }
-.accInputs, .saveButton{
+
+.accInputs,
+.saveButton {
     position: relative;
     display: block;
     border: 1px solid var(--border_interactive_default);
@@ -172,7 +184,7 @@ input:not(.saveButton):focus{
     /* width: 100%; */
 }
 
-.saveButton{
+.saveButton {
     border-radius: 15px;
     display: flex;
     /* font-size: 2rem; */
@@ -188,15 +200,15 @@ input:not(.saveButton):focus{
     width: 10rem;
 }
 
-.changeInput .saveButton{
+.changeInput .saveButton {
     width: 100%;
 }
 
-.changeInput h2{
+.changeInput h2 {
     align-self: center;
 }
 
-.saveButton button{
+.saveButton button {
     color: var(--text_high_contrast);
     border: none;
     background-color: transparent;
@@ -206,45 +218,46 @@ input:not(.saveButton):focus{
     font-size: 1rem;
 }
 
-.saveButton:not(.disabledButton, .warnButton):hover{
+.saveButton:not(.disabledButton, .warnButton):hover {
     background-color: var(--solid_bg_hover);
-    color : var(--light_text_high_contrast);
-}
-
-.saveButton:not(.disabledButton) button:hover{
     color: var(--light_text_high_contrast);
 }
 
-.disabledButton{
+.saveButton:not(.disabledButton) button:hover {
+    color: var(--light_text_high_contrast);
+}
+
+.disabledButton {
     background-color: var(--subtle_app_bg);
     cursor: default;
 }
 
-.disabledButton button{
+.disabledButton button {
     color: var(--light_text_low_contrast);
     cursor: default;
 }
 
-.warnButton{
+.warnButton {
     background-color: var(--imperial_red);
     border: var(--imperial_red);
     color: var(--light_text_high_contrast);
 
 }
 
-.warnButton button{
+.warnButton button {
     color: var(--light_text_high_contrast);
 
 }
 
-.warnButton:hover{
+.warnButton:hover {
     background-color: var(--dark_imperial_red);
 }
 
-.warnButton button:hover{
+.warnButton button:hover {
     background-color: var(--dark_imperial_red);
 }
-.changePopups{
+
+.changePopups {
     position: absolute;
     top: 0;
     left: 0;
@@ -253,12 +266,12 @@ input:not(.saveButton):focus{
     display: flex;
     justify-content: center;
     align-items: center;
-    background: rgba(0,0,0,0.5);
+    background: rgba(0, 0, 0, 0.5);
     backdrop-filter: blur(5px);
     z-index: 1;
 }
 
-.changeInput{
+.changeInput {
     display: flex;
     flex-direction: column;
     width: 500px;
@@ -268,7 +281,7 @@ input:not(.saveButton):focus{
     border-radius: 5px;
 }
 
-.popupForm{
+.popupForm {
     display: flex;
     flex-direction: column;
     gap: 1rem;
@@ -276,11 +289,11 @@ input:not(.saveButton):focus{
     align-items: center;
 }
 
-form input::placeholder{
+form input::placeholder {
     color: var(--border_interactive_default);
 }
 
-form input:focus{
+form input:focus {
     outline: none;
 }
 
@@ -288,55 +301,56 @@ form input:focus{
 ::-webkit-scrollbar {
     width: 10px;
 }
-  
-  /* Track */
+
+/* Track */
 ::-webkit-scrollbar-track {
     /* background: var(--darker_van_dyke_transparent); */
     border-radius: 5px;
 }
-  
-  /* Handle */
+
+/* Handle */
 ::-webkit-scrollbar-thumb {
     background: var(--van_dyke);
     border-radius: 5px;
 }
-  
-  /* Handle on hover */
+
+/* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
     background: var(--darker_van_dyke);
 }
 
-::-webkit-scrollbar-button{
+::-webkit-scrollbar-button {
     display: none;
 }
 
-.checkmark{
+.checkmark {
     align-self: center;
     color: var(--yellow_green)
 }
 
 
-button{
+button {
     font-size: 1rem;
-    font-family:Poppins, sans-serif;
+    font-family: Poppins, sans-serif;
 }
 
-input{
+input {
     font-size: 1rem;
-    font-family:Poppins, sans-serif;
+    font-family: Poppins, sans-serif;
 
 }
 
-html, body{
+html,
+body {
     height: 100%;
     width: 100%;
 }
 
-.imgContainer{
+.imgContainer {
     border-radius: 100%;
 }
 
-*{
+* {
     transition-duration: 200ms;
     box-sizing: border-box;
     padding: 0;
@@ -344,64 +358,74 @@ html, body{
     /* font-family: Poppins, sans-serif; */
 }
 
-.verticalLine{
+.verticalLine {
     border-left: 1px solid var(--sec_clr);
     height: 100%;
 }
 
-body::-webkit-scrollbar{
+body::-webkit-scrollbar {
     width: 0.25rem;
 }
-body::-webkit-scrollbar-track{
+
+body::-webkit-scrollbar-track {
     background: var(--bg-primary);
 }
-body::-webkit-scrollbar-thumb{
+
+body::-webkit-scrollbar-thumb {
     background-color: var(--text-primary);
 }
 
-.spin{
+.spin {
     animation: spin 2s infinite;
 }
 
 @keyframes spin {
-    from{
+    from {
         transform: rotate(0deg);
     }
-    to{
+
+    to {
         transform: rotate(360deg);
     }
 }
 
-.error{
+.error {
     color: var(--error);
     align-self: center;
 }
 
-.reqSatisfied, .reqNotMet{
+.reqSatisfied,
+.reqNotMet {
     padding: 2px;
     border-radius: 5px;
     /* display: grid; */
     place-items: center;
 }
-.reqSatisfied{
+
+.reqSatisfied {
     background-color: var(--navbar_contrast_text_transparent);
 }
-.reqNotMet{
+
+.reqNotMet {
     background-color: var(--error_transparent);
     /* color: var(--app_bg); */
 }
-.fa-check{
+
+.fa-check {
     color: var(--navbar_contrast_text)
 }
-.fa-xmark{
+
+.fa-xmark {
     color: var(--error);
 }
-.reqCheck{
+
+.reqCheck {
     display: flex;
     align-items: center;
     gap: 1rem;
 }
-.reqPopup{
+
+.reqPopup {
     position: absolute;
     display: flex;
     flex-direction: column;
@@ -413,20 +437,24 @@ body::-webkit-scrollbar-thumb{
     width: 350px;
     height: 250px;
     border-radius: 10px;
-    box-shadow: 0 0 5px 3px rgba(0,0,0,0.1);
+    box-shadow: 0 0 5px 3px rgba(0, 0, 0, 0.1);
     background-color: var(--app_bg);
     z-index: 10;
     padding: 1rem;
 }
+
 .reqPopup::after {
     content: '';
     position: absolute;
     transform: rotate(45deg);
     left: -10px;
     top: 43.5%;
-    width: 20px; /* Tail width */
-    height: 20px; /* Tail height */
-    background-color: var(--app_bg); /* Tail color, match the reqPopup's background */
-    box-shadow: -3px 3px 5px 0 rgba(0,0,0,0.1);
+    width: 20px;
+    /* Tail width */
+    height: 20px;
+    /* Tail height */
+    background-color: var(--app_bg);
+    /* Tail color, match the reqPopup's background */
+    box-shadow: -3px 3px 5px 0 rgba(0, 0, 0, 0.1);
     z-index: 9;
 }
