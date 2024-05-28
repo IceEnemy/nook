@@ -511,7 +511,7 @@
             
         </div>
     {/if}
-    <main class="main">
+    <main class={$page.url.pathname === '/app/music' ? 'main noPadding' : 'main'}>
         
         <slot/>
     </main>
@@ -595,12 +595,16 @@
         margin-bottom: 2rem;
     }
 
-    main{
+    .main{
         padding: 3rem 3rem 0 3rem;
         margin-left: 18rem;
         width: calc(100% - 18rem);
         background-color: var(--default_white);
         position:relative;
+    }
+
+    .noPadding{
+        padding: 0;
     }
 
     .imgContainer{
