@@ -1,12 +1,12 @@
 <script>
-    import {onMount, onDestroy, afterUpdate} from 'svelte';
+    import {onMount, onDestroy} from 'svelte';
     import {page} from '$app/stores';
-    import {authHandlers, showModal, updateProfileData, userReauthenticated, passwordRequirements} from '$lib/store/store';
-    import {auth}  from '$lib/firebase/firebase.js';
+    import {authHandlers, showModal, updateProfileData, userReauthenticated, passwordRequirements, timerReminder} from '$lib/store/store';
+    // import {auth}  from '$lib/firebase/firebase.js';
     import Navbar from '$lib/Navbar.svelte';
     import {fade, scale} from 'svelte/transition';
     import {authStore, uploadProfilePicture} from '$lib/store/store.js';
-    import {timer} from '$lib/store/timer.js'
+    // import {timer} from '$lib/store/timer.js'
 
     let unsubscribe;
 
@@ -504,13 +504,18 @@
                         {#if errorPopup !== ''}
                             <p class="error">{errorPopup}</p>
                         {/if}
+
+                        
                     </div>
                 </div>
                 {/if}
+
             </div>
             
         </div>
     {/if}
+
+
     <main class={$page.url.pathname === '/app/music' ? 'main noPadding' : 'main'}>
         
         <slot/>
