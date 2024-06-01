@@ -535,3 +535,5 @@ export function formatDate(timestamp){
 
 export const showModal = writable(false);
 export const userReauthenticated = writable(false);
+export const showTools = writable(false);
+export const timerReminder = writable(null);

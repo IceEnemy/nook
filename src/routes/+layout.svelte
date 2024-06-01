@@ -7,59 +7,57 @@
 	import { authStore } from '$lib/store/store.js';
 	import { goto } from '$app/navigation';
 
-	//defines the pages that the user can access if they are not logged in
+	// Defines the pages that the user can access if they are not logged in
 	const nonAuthRoutes = ['/', '/auth/access', '/auth/forgotPassword'];
 
 	onMount(() => {
 		console.log('mounting');
 		let unsubDoc;
-		//onAuthStateChanged is a listener that listens for changes in the user's authentication state
+
+		// onAuthStateChanged is a listener that listens for changes in the user's authentication state
 		const unsubscribe = auth.onAuthStateChanged(async (user) => {
-			//if the user is logged in, then we will fetch the user's data from the firestore and update the authStore
-			if (!user) {
-				return;
-			}
-			let dataToSetToStore;
-			const docRef = doc(db, 'users', user.uid);
-			unsubDoc = onSnapshot(docRef, (docSnap) => {
-				if (docSnap.exists()) {
-					console.log('Fetching user');
-					const data = docSnap.data();
-					dataToSetToStore = data;
-					authStore.update((curr) => {
-						return {
+			if (user) {
+				console.log('User is logged in:', user);
+				const docRef = doc(db, 'users', user.uid);
+				unsubDoc = onSnapshot(docRef, (docSnap) => {
+					if (docSnap.exists()) {
+						console.log('Fetching user data');
+						const data = docSnap.data();
+						authStore.update((curr) => ({
 							...curr,
 							user,
-							data: dataToSetToStore,
+							data,
 							loading: false
-						};
-					});
-				}
-			});
+						}));
+					}
+				});
+			} else {
+				console.log('No user logged in');
+			}
 		});
 
 		const unsubToken = auth.onIdTokenChanged(async (user) => {
 			const currentPath = window.location.pathname;
-
-			console.log('Checking token');
+			console.log('Checking token for path:', currentPath);
 
 			if (!user && !nonAuthRoutes.includes(currentPath)) {
+				console.log('User not logged in, redirecting to /auth/access');
 				goto('/auth/access');
-				// return;
 			} else if (user && (currentPath === '/auth/access' || currentPath === '/')) {
+				console.log('User logged in, redirecting to /app/dashboard');
 				goto('/app/dashboard');
-				// return;
 			}
 		});
+
 		return () => {
 			unsubToken();
 			unsubscribe();
 			if (unsubDoc) unsubDoc();
 		};
 	});
-	// function to check when auth email is the same as firestore email
+
+	// Function to check when auth email is the same as Firestore email
 	$: authStore.subscribe(($authStore) => {
-		// console.log('Checking email');
 		if (auth.currentUser && $authStore.data && $authStore.data.email && auth.currentUser.email) {
 			if (auth.currentUser.email !== $authStore.data.email) {
 				console.log('Updating email in Firestore');

@@ -1,6 +1,6 @@
 import { writable, get } from 'svelte/store';
 import {db} from '$lib/firebase/firebase.js';
-import { authStore } from '$lib/store/store.js';
+import { authStore, timerReminder } from '$lib/store/store.js';
 import {doc, updateDoc, getDoc} from 'firebase/firestore';
 
 export const timerId = writable(null);

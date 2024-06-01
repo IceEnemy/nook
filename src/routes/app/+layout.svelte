@@ -1,18 +1,19 @@
 <script>
-	import { onMount, onDestroy, afterUpdate } from 'svelte';
+	import { onMount, onDestroy } from 'svelte';
 	import { page } from '$app/stores';
 	import {
 		authHandlers,
 		showModal,
 		updateProfileData,
 		userReauthenticated,
-		passwordRequirements
+		passwordRequirements,
+		timerReminder
 	} from '$lib/store/store';
-	import { auth } from '$lib/firebase/firebase.js';
+	// import {auth}  from '$lib/firebase/firebase.js';
 	import Navbar from '$lib/Navbar.svelte';
 	import { fade, scale } from 'svelte/transition';
 	import { authStore, uploadProfilePicture } from '$lib/store/store.js';
-	import { timer } from '$lib/store/timer.js';
+	// import {timer} from '$lib/store/timer.js'
 
 	let unsubscribe;
 
@@ -566,7 +567,8 @@
 				</div>
 			</div>
 		{/if}
-		<main class="main">
+
+		<main class={$page.url.pathname === '/app/music' ? 'main noPadding' : 'main'}>
 			<slot />
 		</main>
 	</div>
@@ -648,12 +650,16 @@
 		margin-bottom: 2rem;
 	}
 
-	main {
+	.main {
 		padding: 3rem 3rem 0 3rem;
 		margin-left: 18rem;
 		width: calc(100% - 18rem);
 		background-color: var(--default_white);
 		position: relative;
+	}
+
+	.noPadding {
+		padding: 0;
 	}
 
 	.imgContainer {
