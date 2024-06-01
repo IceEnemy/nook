@@ -23,7 +23,7 @@
 	let flashcardName = '';
 	let parentNoteId = '';
 
-	const filterOptions = ['Last Edit', 'Created', 'A-Z'];
+	const filterOptions = ['Last edited', 'Recently created', 'Sort A-Z'];
 	let filterSelection = filterOptions[0];
 	const sortOptions = ['Ascending', 'Descending'];
 	let sortSelection = sortOptions[0];
@@ -154,11 +154,6 @@
 		};
 	}
 
-	function handleNewPopup(type) {
-		dropdownOpen.new = false;
-		newPopup = type;
-	}
-
 	async function handleAddFlashcard(title, NoteId) {
 		try {
 			await updateFlashcardStore.addFlashcard(title, NoteId);
@@ -175,12 +170,6 @@
 	<div class="pageContainer">
 		<form class="manageButtons">
 			<div class="choiceButtons">
-				<div class="new-Button" use:clickOutside={'new'}>
-					<button class="addButton" on:click={() => handleNewPopup('flashcard')}>
-						<span class="ph--plus-bold icon"></span>
-						<p class="text">Generate Flashcards</p>
-					</button>
-				</div>
 				<div class="dropdown" use:clickOutside={'filter'}>
 					<button class="addButton varAddButton" on:click={() => toggleDropdown('filter')}>
 						<p class="text">{filterSelection}</p>

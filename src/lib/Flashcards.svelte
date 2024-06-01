@@ -1,120 +1,230 @@
 <script>
-	import { doc, getDoc } from 'firebase/firestore';
-	import { db, auth } from '$lib/firebase/firebase';
-	import FlashcardButton from './Flashcard/FlashcardButton.svelte';
+	import { onMount } from 'svelte';
+	import { doc, getDoc, or } from 'firebase/firestore';
+	import { db } from '$lib/firebase/firebase';
+	import FlashcardButton from '$lib/Flashcard/FlashcardButton.svelte';
 
 	let currentNum = 1;
-	let totalNum = 10;
 	let flashcardName = '';
-	let mode = '';
-
+	let mode = 'Question';
+	let questions = [];
+	let tempQuestions = [];
 	let gotData = false;
+	let showAnswerMode = false;
+	let originalTotalNum;
+	let totalCorrectNum = 1;
+
+	// Variables to store the current question, answer, and open status
+	let currentQuestion = '';
+	let currentAnswer = '';
+	let currentOpen = false;
+	let questionType = '';
 
 	export let flashcardId;
-	console.log(flashcardId);
 
-	// Reference to the flashcard document in Firestore
-	const flashcardRef = doc(db, 'flashcards', flashcardId);
-	getDoc(flashcardRef)
-		.then((doc) => {
-			if (doc.exists()) {
-				const flashcardData = doc.data();
-				gotData = true;
-				mode = 'question';
-				flashcardName = flashcardData.title;
-				console.log('Flashcard name:', flashcardName);
-			} else {
-				console.log('No such document!');
+	onMount(async () => {
+		const docRef = doc(db, 'flashcards', flashcardId);
+		const docSnap = await getDoc(docRef);
+
+		if (docSnap.exists()) {
+			const data = docSnap.data();
+			flashcardName = data.title;
+			questions = data.questions;
+
+			tempQuestions = [...questions]; // Copy questions to temp array
+			randomizeQuestions(); // Randomize the order of questions
+			originalTotalNum = tempQuestions.length;
+			console.log(originalTotalNum); // Debugging: Log the original total number of questions
+			console.log('Questions:', questions); // Debugging: Log the questions array
+
+			fillArrays()
+				.then(() => {
+					gotData = true;
+					console.log('Data loaded and arrays filled');
+					if (tempQuestions.length > 0) {
+						currentNum = 1; // Ensure currentNum is set to 1 to trigger reactive statements
+					}
+				})
+				.catch((error) => {
+					console.error('Error filling arrays:', error);
+					gotData = false; // Consider setting to false or handling error state
+				});
+		} else {
+			console.log('Document does not exist'); // Debugging: Log if document does not exist
+		}
+	});
+
+	function fillArrays() {
+		return new Promise((resolve, reject) => {
+			try {
+				resolve();
+			} catch (error) {
+				reject(error);
 			}
-		})
-		.catch((error) => {
-			console.error('Error getting document:', error);
 		});
+	}
 
-	// change the values of qtype-title and qtype based on the type of question
-	// and the id question h3 value
+	function randomizeQuestions() {
+		for (let i = tempQuestions.length - 1; i > 0; i--) {
+			const j = Math.floor(Math.random() * (i + 1));
+			[tempQuestions[i], tempQuestions[j]] = [tempQuestions[j], tempQuestions[i]];
+		}
+	}
 
-	function handleTitle() {
-		const questionType = document.getElementById('qtype');
-		const question = document.getElementById('question');
-		const mainBox = document.getElementById('main-box');
-		const qtypeTitle = document.getElementById('qtype-title');
-		const qtype = document.getElementById('qtype');
-		const optionBox = document.getElementById('option-box');
+	function showAnswer() {
+		mode = 'Answer';
+		showAnswerMode = true;
+	}
+
+	function handleYes() {
+		if (tempQuestions.length > 0) {
+			tempQuestions.splice(currentNum - 1, 1); // Remove the current question from temp array
+			if (tempQuestions.length === 0) {
+				alert('You have answered all questions!');
+				return;
+			}
+			totalCorrectNum++;
+			if (totalCorrectNum > originalTotalNum) {
+				totalCorrectNum = originalTotalNum; // Reset totalCorrectNum to 1
+			}
+		}
+		console.log('Questions remaining:', tempQuestions.length);
+		console.log('tempQuestions:', tempQuestions); // Debugging: Log the tempQuestions array
+		skipQuestion(true);
+	}
+
+	function handleNo() {
+		// Move the current question to the end of the array
+		if (tempQuestions.length > 1) {
+			const currentQuestion = tempQuestions.splice(currentNum - 1, 1)[0];
+			tempQuestions.push(currentQuestion);
+		}
+		skipQuestion(false);
+	}
+
+	function skipQuestion(skip = true) {
+		mode = 'Question';
+		showAnswerMode = false;
+		if (skip) {
+			currentNum++;
+			if (currentNum > tempQuestions.length) {
+				currentNum = 1; // loop back to the first question
+			}
+		} else {
+			currentNum++;
+			if (currentNum > tempQuestions.length) {
+				currentNum = 1; // loop back to the first question
+			}
+		}
+	}
+
+	// Reactive statement to update current question, answer, open status, and question type
+	$: {
+		if (tempQuestions.length > 0) {
+			const current = tempQuestions[currentNum - 1];
+			currentQuestion = current.question;
+			currentAnswer = current.answer;
+			currentOpen = current.open;
+			questionType = currentOpen ? 'Open-Ended Question' : 'Closed-Ended Question';
+
+			console.log('Current Question:', currentQuestion); // Debugging: Log the current question
+		}
 	}
 </script>
 
 {#if gotData}
 	<div class="flashcard-gridbox">
-		<h2 id="flashcard-title">{flashcardName}</h2>
-		<div class="grid">
-			<div class="title">
-				<h3 id="qtype-title">QUESTION</h3>
-				<h5 id="qtype">Open-Ended Question / Closed Question</h5>
-			</div>
-			<div id="main-box">
-				<h3 id="question">What is the weight of mars</h3>
-			</div>
+		<h2 id="flashcard-title" style="height: 50px;">{flashcardName}</h2>
 
-			<FlashcardButton {currentNum} {totalNum} />
+		<div class="main-content">
+			<div class="question-container" style="overflow-y: auto;">
+				<div class="question-header">
+					<h1 style="margin-bottom: 10px;">{mode}</h1>
+					<h3 style="margin-bottom: 10px;">{questionType}</h3>
+				</div>
+				<div class="question">
+					<p>{mode === 'Question' ? currentQuestion : currentAnswer}</p>
+				</div>
+			</div>
+			<div class="flashcard-button-container">
+				<FlashcardButton
+					{totalCorrectNum}
+					{originalTotalNum}
+					{showAnswerMode}
+					on:showanswer={showAnswer}
+					on:yes={handleYes}
+					on:no={handleNo}
+					on:skipquestion={() => skipQuestion(true)}
+				/>
+			</div>
 		</div>
-		{#if mode === 'question'}
-			console.log('Question mode');
-		{:else if mode === 'answer'}
-			console.log('Answer mode'); 
-		{/if}
 	</div>
 {/if}
 
 <style>
-	.grid {
-		background-color: var(--seasalt);
-		border: 1px solid var(--dun);
-		padding: 24px;
-		border-radius: 32px; /* Rounded corners */
-		width: 1000px; /* Need to fix Im so dumb with css */
-	}
-
 	.flashcard-gridbox {
-		display: grid;
-		justify-content: center;
-		align-items: start;
-		grid-template-rows: auto auto 1fr auto;
-		text-align: center;
-		row-gap: 20px;
-		padding: 20px;
-		height: calc(100vh - 120px);
-		width: 100%;
-		margin: 52px auto;
+		/* Other styles remain unchanged */
+		display: flex;
+		flex-direction: column;
+		min-height: 300px; /* Set a minimum height for the container */
 	}
 
 	#flashcard-title {
-		color: var(--buff);
-		text-align: left;
-		font-size: 2rem;
+		/* Other styles remain unchanged */
+		overflow: auto; /* Hide overflow text */
+		text-overflow: ellipsis; /* Add ellipsis for text overflow */
+		white-space: nowrap; /* Prevent text wrapping */
+		max-width: 100%; /* Allow title to take full width */
+		height: 50px; /* Set a fixed height for the title */
 	}
 
-	.title {
-		display: grid;
-		justify-content: center;
+	.main-content {
+		/* Other styles remain unchanged */
+		flex: 1; /* Allow main content to grow and fill remaining space */
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between; /* Space evenly between elements */
+		padding: 20px;
+		background-color: var(--dun);
+		border-radius: 10px;
+	}
+
+	.question-container {
+		/* Other styles remain unchanged */
+		flex: 1; /* Allow question container to grow and fill remaining space */
+		padding: 30px; /* Add padding to the container */
+		overflow-y: auto; /* Add vertical scrollbar for overflow */
+		/* display all the contents to be centered in the middle */
+		display: flex;
+		flex-direction: column;
+		justify-content: center; /* Center content vertically */
 		align-items: center;
 	}
 
-	#qtype-title {
-		margin: 0;
+	.question-header {
+		text-align: center; /* Center text horizontally */
 	}
-	#qtype {
-		margin-top: 16px;
-		color: var(--chamoisee);
+	.question-header h1 {
+		margin-bottom: 5px !important; /* Add margin to separate elements */
+	}
+	.question-header h3 {
+		margin-bottom: 40px !important; /* Add !important to increase specificity */
 	}
 
-	#main-box {
+	.question {
+		height: 32vh; /* Set height to 50% of viewport height */
+		display: flex;
+		flex-direction: column;
+		justify-content: center; /* Center content vertically */
+	}
+
+	.question p {
+		text-align: center; /* Center text horizontally */
+	}
+
+	.flashcard-button-container {
 		display: flex;
 		justify-content: center;
-		align-items: center;
-	}
-
-	#question {
-		margin: 20% 20%;
+		margin-top: 20px; /* Adjust as needed to create space between the question and button */
 	}
 </style>

@@ -8,7 +8,7 @@
 	<h1>Flashcard</h1>
 </div>
 
-<div>
+<div class="flashcard-container">
 	<Flashcards {flashcardId} />
 </div>
 
@@ -24,5 +24,8 @@
 		top: 0;
 		left: 0;
 		background-color: var(--darker_van_dyke);
+	}
+	.flashcard-container {
+		margin-top: 65px; /* Adjust margin-top to create space below the header */
 	}
 </style>

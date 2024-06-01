@@ -47,12 +47,14 @@
     --light_orange: rgba(252, 218, 187);
 
 
+    --off_red: #ED1E10;
     --imperial_red: #FD4040;
     --dark_imperial_red: #D22E2E;
     --imperial_red_transparent: rgba(253, 64, 64, 0.5);
-    --yellow_green: #B0E64C;
+    --yellow_green: #A0C41C;
     --dark_yellow_green: #9AC843;
     --yellow_green_transparent: rgba(176, 230, 76, 0.5);
+    --apple_green: #92AB00;
 }
 
 .searchbar {

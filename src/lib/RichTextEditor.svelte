@@ -1,6 +1,5 @@
 <script>
 	import { authStore } from '$lib/store/store';
-	// import { ref } from 'firebase/database';
 	import { rtdb, auth, firebaseConfig, db } from '$lib/firebase/firebase';
 	import { onMount } from 'svelte';
 	import firebase from 'firebase/compat/app';
@@ -8,11 +7,17 @@
 	import 'firebase/compat/database';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
+	import { updateFlashcardStore } from './store/flashcard';
+	import Modal from '$lib/Flashcard/Modal.svelte';
 
 	export let noteId = '';
 	export let uid = '';
 	export let username = '';
-	console.log('hey');
+
+	let firepad;
+	let isOpen = false;
+	let flashcardName = '';
+	let loading = false;
 
 	onMount(async () => {
 		try {
@@ -22,7 +27,6 @@
 			await loadScript('/src/lib/firepad/codemirror.js');
 			await loadScript('/src/lib/firepad/firepad.js');
 			await loadScript('/src/lib/firepad/userlist.js');
-			// console.log("loaded")
 			init();
 		} catch (e) {
 			console.log(e);
@@ -38,8 +42,8 @@
 			document.head.appendChild(script);
 		});
 	}
+
 	function init() {
-		// Initialize Firebase
 		if (!firebase.apps.length) {
 			firebase.initializeApp(firebaseConfig);
 		} else {
@@ -51,9 +55,8 @@
 		var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
 
 		var userId = uid;
-		console.log(userId);
 
-		var firepad = Firepad.fromCodeMirror(firepadRef, codeMirror, {
+		firepad = Firepad.fromCodeMirror(firepadRef, codeMirror, {
 			richTextToolbar: true,
 			richTextShortcuts: true,
 			userId: userId
@@ -66,7 +69,6 @@
 			username
 		);
 
-		//// Initialize contents.
 		firepad.on('ready', function () {
 			if (firepad.isHistoryEmpty()) {
 				firepad.setText('Start writing!');
@@ -74,7 +76,6 @@
 		});
 	}
 
-	// Helper to get hash from end of URL or generate a random one.
 	function getExampleRef() {
 		var ref = firebase.database().ref();
 		var hash = noteId;
@@ -83,49 +84,70 @@
 		} else {
 			goto('/app/dashboard');
 		}
-		if (typeof console !== 'undefined') {
-			console.log('Firebase data: ', ref.toString());
-		}
 		return ref;
 	}
 
-	export function getExampleRef2(noteId2) {
-		var ref = firebase.database().ref();
-		var hash = noteId2;
-		if (hash) {
-			ref = ref.child(hash);
+	function openModal() {
+		isOpen = true;
+	}
+
+	function closeModal() {
+		isOpen = false;
+	}
+
+	async function handleNewFlashcard(name) {
+		closeModal();
+		var text = firepad.getText();
+		text = text.replace(/['"]+/g, '');
+		console.log(text);
+
+		loading = true; // Set loading state to true
+
+		try {
+			await updateFlashcardStore.addFlashcard(name, noteId, text);
+			goto(`/app/flashcards`); // Navigate to the flashcards page after adding
+		} catch (error) {
+			console.error('Error generating flashcard:', error);
+		} finally {
+			loading = false; // Set loading state back to false
 		}
-		if (typeof console !== 'undefined') {
-			console.log('Firebase data: ', ref.toString());
-		}
-		return ref;
 	}
 </script>
 
 <svelte:head>
-	<!-- <script src="https://www.gstatic.com/firebasejs/7.13.2/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.13.2/firebase-auth.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/7.13.2/firebase-database.js"></script> -->
-
-	<!-- CodeMirror -->
-	<!-- <script src="/src/lib/firepad/codemirror.js"></script> -->
 	<link rel="stylesheet" href="/src/lib/firepad/codemirror.css" />
-
-	<!-- Firepad -->
 	<link rel="stylesheet" href="/src/lib/firepad/firepad.css" />
-	<!-- <script src="/src/lib/firepad/firepad.js"></script> -->
-
-	<!--UserList-->
-	<!-- <script src="/src/lib/firepad/userlist.js"></script> -->
 	<link rel="stylesheet" href="/src/lib/firepad/userlist.css" />
 </svelte:head>
+
+<Modal {isOpen} bind:flashcardName onSubmit={handleNewFlashcard} onCancel={closeModal} />
 
 <div id="noteContainer">
 	<div id="userlist"></div>
 	<div id="firepad"></div>
+	<button on:click={openModal}>Generate Flashcard</button>
 </div>
 
+{#if loading}
+	<div class="loading-indicator">
+		<!-- You can use any loading spinner or text -->
+		<p>Loading...</p>
+	</div>
+{/if}
+
 <style>
+	.loading-indicator {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		background: rgba(0, 0, 0, 0.75);
+		color: white;
+		padding: 1rem 2rem;
+		border-radius: 8px;
+		z-index: 1000; /* Ensure it's on top of other content */
+	}
+	
 	#noteContainer {
 		display: flex;
 		flex-direction: column;
@@ -137,7 +159,6 @@
 		bottom: 0;
 		height: auto;
 		background-color: wheat;
-		/* width: 175px; */
 	}
 	#firepad {
 		position: absolute;
@@ -145,5 +166,10 @@
 		top: 0px;
 		bottom: 0;
 		right: 0;
+	}
+	button {
+		position: absolute;
+		left: 0;
+		top: 0;
 	}
 </style>
