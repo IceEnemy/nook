@@ -33,7 +33,7 @@
         goto(`/app/${section.toLowerCase()}`);
     }
 
-    let isToolsBarOpen = true;
+    let isToolsBarOpen = false;
 
     function toggleToolsBar() {
         isToolsBarOpen = !isToolsBarOpen;
