@@ -1,10 +1,12 @@
 <script>
-	import FolderPreview from './FolderPreview.svelte';
-	import NotePreview from './NotePreview.svelte';
+	// import FolderPreview from "./FolderPreview.svelte";
+	import FlashcardPreview from './FlashcardPreview.svelte';
+	// import NotePreview from "./NotePreview.svelte";
 	import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 	import { db, auth } from '$lib/firebase/firebase';
 	import { onMount, onDestroy } from 'svelte';
 	import { authStore, updateNoteStore } from '$lib/store/store.js';
+	import { updateFlashcardStore } from '$lib/store/flashcard.js';
 	import Authenticate from '$lib/Authenticate.svelte';
 	import NoteNav from '$lib/noteNav.svelte';
 	import { get } from 'svelte/store';
@@ -18,9 +20,10 @@
 
 	let editDetail = '';
 	let newPopup = '';
-	let noteName = '';
+	let flashcardName = '';
+	let parentNoteId = '';
 
-	const filterOptions = ['Last Edit', 'Created', 'A-Z'];
+	const filterOptions = ['Last edited', 'Recently created', 'Sort A-Z'];
 	let filterSelection = filterOptions[0];
 	const sortOptions = ['Ascending', 'Descending'];
 	let sortSelection = sortOptions[0];
@@ -30,14 +33,13 @@
 	}
 
 	onMount(async () => {
-		await getNoteData();
+		await getFlashcardData();
 		initialData = false;
 	});
 
 	let docSnap = '';
 	let searched = '';
-	let folders = [];
-	let notes = [];
+	let flashcards = [];
 	let unsubscribe;
 
 	function listenEditDetail(event) {
@@ -45,19 +47,18 @@
 		const { detail, link, title } = event.detail;
 		newPopup = detail;
 		editDetail = link;
-		noteName = title;
+		flashcardName = title;
 	}
 
-	$: filteredFolders = searched
-		? folders.filter((folder) => folder.title.toLowerCase().includes(searched.toLowerCase()))
-		: folders;
+	$: filteredFlashcards = searched
+		? flashcards.filter((flashcards) =>
+				flashcards.title.toLowerCase().includes(searched.toLowerCase())
+			)
+		: flashcards;
 
-	$: filteredNotes = searched
-		? notes.filter((note) => note.title.toLowerCase().includes(searched.toLowerCase()))
-		: notes;
-
-	$: filterSelection, sortSelection, (filteredFolders = filteredFolders.sort(sortingFunction));
-	$: filterSelection, sortSelection, (filteredNotes = filteredNotes.sort(sortingFunction));
+	$: filterSelection,
+		sortSelection,
+		(filteredFlashcards = filteredFlashcards.sort(sortingFunction));
 
 	function sortingFunction(a, b) {
 		let compare = 0; // Default to 'equal'
@@ -77,54 +78,30 @@
 		return sortSelection === 'Ascending' ? compare : -compare;
 	}
 
-	$: if (!initialData && ref) getNoteData();
+	$: if (!initialData && ref) getFlashcardData();
 
 	async function fillArrays() {
-		folders = [];
-		notes = [];
-		const files = docSnap.data().notes;
+		flashcards = [];
+		const files = docSnap.data().flashcards;
 		for (const file of files) {
-			if (file.type === 'folder') {
-				const folderDoc = await getDoc(doc(db, 'folders', file.noteId));
-				folders.push({ ...folderDoc.data(), noteId: file.noteId });
-				console.log(folders);
-			} else {
-				const noteDoc = await getDoc(doc(db, 'notes', file.noteId));
-				notes.push({ ...noteDoc.data(), noteId: file.noteId });
-				console.log(notes);
-			}
+			const flashcardDoc = await getDoc(doc(db, 'flashcards', file.flashcardId));
+			flashcards.push({ ...flashcardDoc.data(), flashcardId: file.flashcardId });
+			console.log(flashcards);
 		}
-		folders.sort(sortingFunction);
-		notes.sort(sortingFunction);
+		flashcards.sort(sortingFunction);
 	}
 
-	async function getNoteData() {
+	async function getFlashcardData() {
 		dataGot = false;
 
 		if (unsubscribe) unsubscribe();
 
-		const docRef = ref ? doc(db, 'folders', ref) : doc(db, 'users', auth.currentUser.uid);
-
-		// if(ref){
-		//     // docSnap = await getDoc(doc(db, 'folders', ref));
-		//     // console.log(docSnap.data());
-		//     unsubscribe = onSnapshot(doc(db, 'folders', ref), (doc) => {
-		//         docSnap = doc;
-		//         fillArrays();
-		//     });
-		// }
-		// else{
-		//     // docSnap = await getDoc(doc(db, 'users', auth.currentUser.uid));
-		//     unsubscribe = onSnapshot(doc(db, 'users', auth.currentUser.uid), (doc) => {
-		//         docSnap = doc;
-		//         fillArrays();
-		//     });
-		// }
+		const docRef = ref ? doc(db, 'flashcards', ref) : doc(db, 'users', auth.currentUser.uid);
 
 		unsubscribe = onSnapshot(docRef, (doc) => {
 			dataGot = false;
 			docSnap = doc;
-			// Wait for fillArrays to complete before setting dataGot to true
+
 			fillArrays()
 				.then(() => {
 					dataGot = true;
@@ -135,25 +112,6 @@
 					dataGot = false; // Consider setting to false or handling error state
 				});
 		});
-
-		// folders = [];
-		// notes = [];
-		// const files = docSnap.data().notes;
-		// for(const file of files){
-		//     if(file.type === 'folder'){
-		//         const folderDoc = await getDoc(doc(db, 'folders', file.noteId))
-		//         folders.push({ ...folderDoc.data(), noteId: file.noteId });
-		//         console.log(folders)
-		//     }
-		//     else{
-		//         const noteDoc = await getDoc(doc(db, 'notes', file.noteId))
-		//         notes.push({ ...noteDoc.data(), noteId: file.noteId });
-		//         console.log(notes)
-		//     }
-		// }
-
-		// dataGot = true;
-		// console.log("dataGot!")
 	}
 	onDestroy(() => {
 		if (unsubscribe) return unsubscribe();
@@ -165,7 +123,7 @@
 			if (name == 'popup') {
 				if (node && !node.contains(event.target) && !event.defaultPrevented) {
 					newPopup = '';
-					noteName = '';
+					flashcardName = '';
 				}
 			} else {
 				if (node && !node.contains(event.target) && !event.defaultPrevented) {
@@ -178,7 +136,7 @@
 			if (event.key === 'Escape' || event.keyCode === 27) {
 				if (name == 'popup') {
 					newPopup = '';
-					noteName = '';
+					flashcardName = '';
 				} else {
 					dropdownOpen[name] = false;
 				}
@@ -196,49 +154,22 @@
 		};
 	}
 
-	function handleNewPopup(type) {
-		dropdownOpen.new = false;
-		newPopup = type;
-	}
-
-	async function handleAddNote(title, type) {
+	async function handleAddFlashcard(title, NoteId) {
 		try {
-			await updateNoteStore.addNote(title, type, ref);
+			await updateFlashcardStore.addFlashcard(title, NoteId);
 		} catch (e) {
 			console.log(e);
 		}
 		newPopup = '';
-		noteName = '';
+		flashcardName = '';
+		parentNoteId = '';
 	}
-
-	console.log(folders);
-	console.log(notes);
 </script>
 
 {#if dataGot}
 	<div class="pageContainer">
 		<form class="manageButtons">
 			<div class="choiceButtons">
-				<div class="dropdown" use:clickOutside={'new'}>
-					<button class="addButton" on:click={() => toggleDropdown('new')}>
-						<span class="ph--plus-bold icon"></span>
-						<p class="text">New</p>
-					</button>
-					{#if dropdownOpen.new}
-						<!-- Conditional rendering for dropdown content -->
-						<div class="dropdown-content">
-							<button on:click={() => handleNewPopup('folder')}>
-								<span class="humbleicons--folder-add icon"></span>
-								New Folder
-							</button>
-							<button on:click={() => handleNewPopup('note')}>
-								<span class="iconamoon--file-add-bold icon"></span>
-								New Note
-							</button>
-							<!-- Add more options as needed -->
-						</div>
-					{/if}
-				</div>
 				<div class="dropdown" use:clickOutside={'filter'}>
 					<button class="addButton varAddButton" on:click={() => toggleDropdown('filter')}>
 						<p class="text">{filterSelection}</p>
@@ -289,29 +220,21 @@
 			</div>
 			<label>
 				<span class="ic--round-search icon"></span>
-				<input type="text" class="searchbar" placeholder="Seach Notes" bind:value={searched} />
+				<input type="text" class="searchbar" placeholder="Seach Flashcards" bind:value={searched} />
 			</label>
 		</form>
 
-		<div class="folderContainer">
-			<p>Folders</p>
-			<div class="folderGrid">
-				{#each filteredFolders as folder}
-					<!-- {#if (searched != '' && folder.title.toLowerCase().includes(searched.toLowerCase())) || searched === ''} -->
-					<FolderPreview
-						title={folder.title}
-						link={folder.noteId}
+		<div class="flashcardContainer">
+			<p>flashcards</p>
+
+			<div class="flashcardGrid">
+				{#each filteredFlashcards as flash}
+					<FlashcardPreview
+						title={flash.title}
+						link={flash.flashcardId}
 						on:openPopup={listenEditDetail}
 					/>
 					<!-- {/if} -->
-				{/each}
-			</div>
-		</div>
-		<div class="noteContainer">
-			<p>Notes</p>
-			<div class="noteGrid">
-				{#each filteredNotes as note}
-					<NotePreview title={note.title} link={note.noteId} on:openPopup={listenEditDetail} />
 				{/each}
 			</div>
 		</div>
@@ -322,75 +245,47 @@
 					transition:scale={{ start: 0.8, end: 1, duration: 200 }}
 					use:clickOutside={'popup'}
 				>
-					{#if newPopup === 'folder'}
-						<h2>New folder name</h2>
+					{#if newPopup === 'flashcard!'}
+						<h2>New flashcard name</h2>
 						<form class="popupForm">
 							<div>
 								<label class="accInputs">
-									<input type="text" placeholder="Folder title" bind:value={noteName} />
+									<input type="text" placeholder="Flashcard title" bind:value={flashcardName} />
+									<input type="text" placeholder="Note ID" bind:value={parentNoteId} />
 								</label>
 							</div>
 							<label class="saveButton">
-								<button
-									on:click={() => {
-										updateNoteStore.updateTitle(
-											editDetail,
-											newPopup === 'titleNote' ? 'note' : 'folder',
-											noteName
-										);
-										newPopup = '';
-										noteName = '';
-										location.reload();
-									}}>Confirm</button
+								<button on:click={() => handleAddFlashcard(flashcardName, parentNoteId)}
+									>Confirm</button
 								>
 							</label>
 						</form>
-					{:else if newPopup === 'note'}
-						<h2>New note name</h2>
-						<form class="popupForm">
-							<div>
-								<label class="accInputs">
-									<input type="text" placeholder="Note title" bind:value={noteName} />
-								</label>
-							</div>
-
-							<label class="saveButton">
-								<button on:click={() => handleAddNote(noteName, 'note')}>Confirm</button>
-							</label>
-						</form>
-					{:else if newPopup === 'titleNote' || newPopup === 'titleFolder'}
+					{:else if newPopup === 'titleFlashcard'}
 						<h2>Edit title</h2>
 						<form class="popupForm">
 							<div>
 								<label class="accInputs">
-									<input type="text" placeholder="New title" bind:value={noteName} />
+									<input type="text" placeholder="New title" bind:value={flashcardName} />
 								</label>
 							</div>
 
 							<label class="saveButton">
 								<button
 									on:click={() =>
-										updateNoteStore.updateTitle(
-											editDetail,
-											newPopup === 'titleNote' ? 'note' : 'folder',
-											noteName
-										)}>Confirm</button
+										updateFlashcardStore.updateTitleFlashcard(editDetail, flashcardName)}
+									>Confirm</button
 								>
 							</label>
 						</form>
-					{:else if newPopup === 'deleteNote' || newPopup === 'deleteFolder'}
-						<h2>Are you sure you want to delete this note?</h2>
+					{:else if newPopup === 'deleteFlashcard'}
+						<h2>Are you sure you want to delete this flashcard?</h2>
 						<form class="popupForm">
 							<label class="saveButton">
 								<button
 									on:click={() => {
-										updateNoteStore.deleteNote(
-											editDetail,
-											newPopup == 'deleteNote' ? 'note' : 'folder',
-											ref
-										);
+										updateFlashcardStore.deleteFlashcard(editDetail);
 										newPopup = '';
-										noteName = '';
+										flashcardName = '';
 									}}>Confirm</button
 								>
 							</label>
@@ -423,12 +318,11 @@
 		height: 80%;
 		overflow-y: scroll;
 	}
-	.folderContainer {
+	.flashcardContainer {
 		width: 100%;
 		margin-bottom: 1rem;
 	}
-	.folderGrid,
-	.noteGrid {
+	.flashcardGrid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
 		gap: 1rem;
