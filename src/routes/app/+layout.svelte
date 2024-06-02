@@ -694,7 +694,7 @@
 		height: 100%;
 		background: rgba(0, 0, 0, 0.5);
 		backdrop-filter: blur(5px);
-		z-index: 1;
+		z-index: 1000;
 	}
 
     .accountSettings{

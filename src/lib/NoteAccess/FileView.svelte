@@ -332,16 +332,7 @@
 							</div>
 							<label class="saveButton">
 								<button
-									on:click={() => {
-										updateNoteStore.updateTitle(
-											editDetail,
-											newPopup === 'titleNote' ? 'note' : 'folder',
-											noteName
-										);
-										newPopup = '';
-										noteName = '';
-										location.reload();
-									}}>Confirm</button
+								on:click={() => handleAddNote(noteName, 'folder')}>Confirm</button
 								>
 							</label>
 						</form>
@@ -369,12 +360,16 @@
 
 							<label class="saveButton">
 								<button
-									on:click={() =>
-										updateNoteStore.updateTitle(
-											editDetail,
-											newPopup === 'titleNote' ? 'note' : 'folder',
-											noteName
-										)}>Confirm</button
+								on:click={() => {
+									updateNoteStore.updateTitle(
+										editDetail,
+										newPopup === 'titleNote' ? 'note' : 'folder',
+										noteName
+									);
+									newPopup = '';
+									noteName = '';
+									location.reload();
+								}}>Confirm</button
 								>
 							</label>
 						</form>
