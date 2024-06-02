@@ -55,6 +55,7 @@ export function resetTimer() {
   timer.set(get(globalWorkTime));
   lapCount.set(0);
   timerState.set('working');
+  timerReminder.set(null);
 
   setTimeout(() => {
     timerId.set(null);
@@ -71,6 +72,7 @@ function switchTimerState() {
     if (state === 'working') {
       // Set the timer for the break period
       lapCount.update(n => n + 1);
+      timerReminder.set('break');
       timer.set(get(globalBreakTime)); // e.g., 5 minutes break
       if(get(lapCount) < get(lapLimit)) return 'break';
       else { 
@@ -80,6 +82,7 @@ function switchTimerState() {
       }
     } else {
       // Set the timer for the working period
+      timerReminder.set('work');
       timer.set(get(globalWorkTime)); 
       return 'working';
     }

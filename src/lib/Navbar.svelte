@@ -16,7 +16,7 @@
 
     const navOption1 = [
         { name: 'Dashboard', icon: 'material-symbols-light--dashboard-outline' },
-        { name: 'Inbox', icon: 'material-symbols--inbox' },
+        { name: 'Notifications', icon: 'material-symbols--inbox' },
         { name: 'Calendar', icon: 'mdi--calendar' },
         { name: 'Contacts', icon: 'lucide--contact-round' }
     ];
@@ -76,9 +76,18 @@
         <OptionButton/>    
     </div>
 </nav>
-
+<div class="toolsBar">hey</div>
 
 <style>
+
+    /* .toolsBar{
+        width: 30rem;
+        height: 20rem;
+        position: fixed;
+        left: 18rem;
+        z-index: 100;
+        background-color: var(--navbar_bg);
+    } */
 
     h2{
         font-size: 1.2 rem;

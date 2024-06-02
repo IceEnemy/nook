@@ -2,11 +2,9 @@
     import {onMount, onDestroy} from 'svelte';
     import {page} from '$app/stores';
     import {authHandlers, showModal, updateProfileData, userReauthenticated, passwordRequirements, timerReminder} from '$lib/store/store';
-    // import {auth}  from '$lib/firebase/firebase.js';
     import Navbar from '$lib/Navbar.svelte';
     import {fade, scale} from 'svelte/transition';
     import {authStore, uploadProfilePicture} from '$lib/store/store.js';
-    // import {timer} from '$lib/store/timer.js'
 
     let unsubscribe;
 
@@ -46,7 +44,6 @@
     let errorPopup = '';
     let error = '';
 
-
     let isPasswordFocused = false;
 
     function handlePassFocus(){
@@ -57,31 +54,17 @@
         isPasswordFocused = false;
     }
 
-    // console.log(username, DOB, phoneNumber);
-
-    // let username = '';
-    // let profilePic = '';
     let accSelect = 'Account'
-
     let AccPopup = '';
-    // onMount(() => {
-    //     const unsubscribe = authStore.subscribe((val) => {
-    //         username = val.data.username || 'Loading..';
-    //         profilePic = val.data.profilePic || 'https://via.placeholder.com/150';
-    //     })
-
-    //     return () => unsubscribe();
-    // });
+    
     async function handleFileChange(event) {
         const file = event.target.files[0];
         if (!file) return;
 
-        // Upload file to firebase storage and update user's profile
         await uploadProfilePicture(file);
     }
 
     async function saveChanges(){
-        // if(!isChanged) return;
         await updateProfileData(usernameInput, DOBInput, phoneNumberInput);
         dataGot = false;
     }
@@ -89,15 +72,12 @@
     function openPopup(param){
         if(param == 'email'){
             AccPopup = 'email';
-            console.log(param);
         }
         else if(param == 'password'){
             AccPopup = 'password';
-            console.log(param);
         }
         else if(param == 'delete'){
             AccPopup = 'delete';
-            console.log(param);
         }
     }
 
@@ -187,19 +167,11 @@
         }
     }
 
-
-    // function showAcc(){
-    //     showModal.set(true);
-    //     //set the focus to account settings
-    //     // document.querySelector('.blurmodal').focus();
-    // }
-
     $: isChanged = usernameInput !== username || DOBInput !== DOB || (phoneNumberInput !== phoneNumber && phoneNumberInput !== '' && phoneNumber !== '');
 
     let dataGot = false;
 
     let accSettingsModal;
-
     let accPopupModal;
 
     $: {
@@ -217,18 +189,18 @@
             }, 0);
         }
     }
-    
 
     $: {
         if ($authStore.data.username !== undefined && $authStore.data.DOB !== undefined && !dataGot) {
         usernameInput = $authStore.data.username;
         DOBInput = $authStore.data.DOB;
         phoneNumberInput = $authStore.data.phoneNumber;
-        // console.log(usernameInput, DOBInput, phoneNumberInput);
         dataGot = true;
     }}
 
-    
+    function closeReminderPopup() {
+        timerReminder.set(null);
+    }
 </script>
 
 {#if !loading}
@@ -238,10 +210,9 @@
         <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
         <div transition:fade={{ duration: 200 }} class="blurmodal" on:click={closeAcc} on:keydown={(event) => {escAcc(event)}} tabindex="-1" role="dialog" aria-label="Account Settings">
             <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <!-- svelte-ignore a11y-no-static-element-interactions -->
             <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+            <!-- svelte-ignore a11y-no-static-element-interactions -->
             <div transition:scale={{ start:0.8, end:1,duration: 200}} class = "accountSettings" on:click|stopPropagation tabindex="0" bind:this={accSettingsModal}>
-                <!-- <div class="accountContainer"> -->
                 <div class="accButtons">
                     <div class="SettingsTitle">
                         <h1>Settings</h1>
@@ -262,7 +233,6 @@
                 </div>
                 <div class="accDetails">
                     {#if accSelect === 'Account'}
-                        <!-- Content for Account Settings -->
                         <div>
                             <h2>Personal Information</h2>
                             <p>Make changes to your personal information</p>
@@ -314,7 +284,6 @@
                                 
                             </form>
                     {:else if accSelect === 'Security'}
-                        <!-- Content for Security -->
                         <div>
                             <h2>Security and Privacy</h2>
                             <p>Make changes to your Security Settings</p>
@@ -350,13 +319,11 @@
                 </div>
                 {#if AccPopup !== ''}
                 <div class="changePopups" transition:fade={{ duration: 200 }} on:click={closeAccPopup} on:keydown={(event) => {escAccPopup(event)}} tabindex="-1" role="dialog" aria-label="Change Popup">
-                <!-- Change Email Popup -->
                     <div class="changeInput" transition:scale={{ start:0.8, end:1,duration: 200}} on:click|stopPropagation tabindex="0" bind:this={accPopupModal}>
                         {#if AccPopup === 'email' || AccPopup === 'password' || AccPopup === 'delete'}
                             <h2>Enter your password</h2>
                             <form class = "popupForm">
                                 <div class='popupDiv'>
-                                    <!-- <span class="inputTitle">Password</span> -->
                                     <label class = "accInputs">
                                         <input type="password" placeholder="Type in your password!" bind:value={password}>
                                         
@@ -515,16 +482,53 @@
         </div>
     {/if}
 
+    {#if $timerReminder}
+    <!-- svelte-ignore a11y-click-events-have-key-events -->
+    <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+    <!-- svelte-ignore a11y-no-static-element-interactions -->
+    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+    <div transition:fade={{ duration: 200 }} class="blurmodal" on:click={closeReminderPopup} on:keydown={(event) => {if (event.key === "Escape") closeReminderPopup()}} tabindex="-1" role="dialog" aria-label="Timer Reminder">
+        <!-- svelte-ignore a11y-click-events-have-key-events -->
+        <!-- svelte-ignore a11y-no-static-element-interactions -->
+        <div transition:scale={{ start:0.8, end:1,duration: 200}} class="reminderPopup" on:click|stopPropagation tabindex="0">
+            <span class = {$timerReminder == 'work' ? 'carbon--book medium-icon' : 'codicon--coffee medium-icon'}></span>
+            <h2>{$timerReminder === 'work' ? 'Time to Work!' : 'Time for a Break!'}</h2>
+            <label class="saveButton">
+                <button on:click={closeReminderPopup}>Close</button>
+            </label>
+        </div>
+    </div>
+    {/if}
 
     <main class={$page.url.pathname === '/app/music' ? 'main noPadding' : 'main'}>
-        
         <slot/>
     </main>
 </div>
 {/if}
 
-
 <style>
+    /* Add the styles for the reminder popup */
+    .reminderPopup {
+        color: var(--text_high_contrast);
+        z-index: 900;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 2rem;
+        background-color: var(--seasalt);
+        /* width: 30rem; */
+        max-width: 80%;
+        max-height: 50%;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        border-radius: 30px;
+        gap: 10px;
+        overflow: hidden;
+    }
+
     .reqPopup{
         transform: translate(130%, -15%);
     }
@@ -588,8 +592,6 @@
         border: none;
         background : transparent;
         color: var(--text_high_contrast);
-        /* font-size: 1rem;
-        font-family:Poppins, sans-serif; */
         padding: 0.5rem;
     }
 
@@ -615,9 +617,7 @@
     .imgContainer{
         width: 100px;
         height: 100px;
-        /* border-radius: 50%; */
         object-fit: cover;
-        /* box-sizing: border-box; */
     }
 
     input[type="radio"] {
@@ -628,7 +628,6 @@
     }
 
     .accButtons label {
-        /* transition-duration: 300ms; */
         transition-timing-function: ease-in-out;
         display: inline-block;
         background-color: var(--seasalt);
@@ -637,36 +636,25 @@
         border-radius: 10px 0px 0px 10px; 
         font-size: 1rem;
         cursor: pointer;
-
-        /* clip-path: polygon(0 0, 100% 0, 100% 100%, 20% 100%); */
-        /* clip-path: polygon(0 0, 100% 0%, 100% 100%, 0% 100%, 10% 50%); */
     }
 
     .accButtons label:not(.selected):hover {
         background-color: var(--dim_linen);
-        /* color: var(--light_text_high_contrast); */
         margin-left: 0;
     }
 
     .accButtons label.selected{
         background-color: var(--almond);
-        /* color: var(--light_text_high_contrast); */
         margin-left: 5rem;
-        /* transform: translateX(30px); */
         cursor: default;
     }
 
     .accButtons{
         display: flex;
         flex-direction: column;
-        /* gap: 1rem; */
-        /* padding: 2rem 0rem 1rem 1rem; */
         padding-top: 2rem;
         background: var(--seasalt);
-        /* background: transparent; */
-        /* border-radius: 5px; */
         width: 25%;
-        /* width: 16rem; */
         min-width: 18rem;
         height: 100%;
     }
@@ -690,23 +678,16 @@
         gap: 2rem;
         padding: 3rem;
         background: var(--default_white);
-        /* border-radius: 5px; */
         width: 75%;
         height: 100%;
         overflow: scroll;
-        /* make the scrollbars invisible */
         scrollbar-width: none;
     }
 
     .SettingsTitle{
-
         width: 100%;
         height: 8rem;
         padding-left: 2rem;
-        /* text-align: left; */
-        /* justify-content: left; */
-
-        /* background: var(--prim_clr); */
     }
 
     .blurmodal{
@@ -725,10 +706,6 @@
         z-index: 90000;
         display: flex;
         flex-direction: row;
-        /* align-items: center;
-        justify-content: center; */
-        /* padding: 3rem 3rem; */
-        /* background-color: var(--navbar_bg_darker); */
         width: 80rem;
         max-width: 80%;
         max-height: 80%;
