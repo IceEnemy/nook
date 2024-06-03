@@ -97,7 +97,7 @@ export const updateFlashcardStore = {
                     { role: 'system', content: 'You are a helpful assistant that generates flashcards.' },
                     { role: 'user', content: prompt }
                 ],
-                max_tokens: 1000,
+                max_tokens: 2000,
                 temperature: 0.7,
                 n: 1
             })
