@@ -44,7 +44,13 @@
 		</div>
 
 		<div class="music">
-			<div class="thumbnails">hey</div>
+			<div class="thumbnails">
+				{#if $currentTrack !== null}
+					<img src={songArr[$currentTrack].thumbnail} alt="" class="thumbnailImg">
+					<h2>{songArr[$currentTrack].name}</h2>
+				{/if}
+				<!-- <img src="{songArr[]}" alt="" class="thumbnailImg"> -->
+			</div>
 			<div class="musicChoice">
 				<div class="choiceHead">
 					<p>#</p>
@@ -95,6 +101,14 @@
 </main>
 
 <style>
+	.thumbnailImg{
+		width: 250px;
+		height: 250px;
+		object-fit: cover;
+		border-radius: 5px;
+		
+	}
+
 	button {
 		background: transparent;
 		color: var(--default_white);
@@ -157,6 +171,7 @@
 		background-color: var(--default_white);
 		align-items: center;
 		justify-content: center;
+		gap: 10px;
 	}
 
 	.musicChoice {

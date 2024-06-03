@@ -14,19 +14,22 @@ const songArr = [
     name: "Ciudades LoFi",
     author: "RAME - Syncopation Station",
     duration: "1:59",
-    path: "../src/lib/assets/ciudades-lo-fi-music-produced-by-rame-syncopation-station-198728.mp3"
+    path: "../src/lib/assets/ciudades-lo-fi-music-produced-by-rame-syncopation-station-198728.mp3",
+    thumbnail: "../src/lib/assets/cicImg.png"
   },
   {
     name: "Deep LoFi Vibes",
     author: "Xethrocc",
     duration: "3:18",
-    path: "../src/lib/assets/deep-lofi-vibes-205062.mp3"
+    path: "../src/lib/assets/deep-lofi-vibes-205062.mp3",
+    thumbnail: "../src/lib/assets/deepImg.png"
   },
   {
     name: "LoFi Hip-Hop - Coffee and Tapes",
     author: "LFC Records",
     duration: "2:04",
-    path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3"
+    path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+    thumbnail: "../src/lib/assets/tapeImg.png"
   }
 ];
 
