@@ -1,10 +1,17 @@
 <script>
-    import {onMount, onDestroy} from 'svelte';
-    import {page} from '$app/stores';
-    import {authHandlers, showModal, updateProfileData, userReauthenticated, passwordRequirements, timerReminder} from '$lib/store/store';
-    import Navbar from '$lib/Navbar.svelte';
-    import {fade, scale} from 'svelte/transition';
-    import {authStore, uploadProfilePicture} from '$lib/store/store.js';
+	import { onMount, onDestroy } from 'svelte';
+	import { page } from '$app/stores';
+	import {
+		authHandlers,
+		showModal,
+		updateProfileData,
+		userReauthenticated,
+		passwordRequirements,
+		timerReminder
+	} from '$lib/store/store';
+	import Navbar from '$lib/Navbar.svelte';
+	import { fade, scale } from 'svelte/transition';
+	import { authStore, uploadProfilePicture } from '$lib/store/store.js';
 
 	let unsubscribe;
 
@@ -36,13 +43,13 @@
 	let DOBInput;
 	let phoneNumberInput;
 
-    let password = '';
-    let newEmail = '';
-    let delEmail = '';
-    let newPassword = '';
-    let confirmNewPassword = '';
-    let errorPopup = '';
-    let error = '';
+	let password = '';
+	let newEmail = '';
+	let delEmail = '';
+	let newPassword = '';
+	let confirmNewPassword = '';
+	let errorPopup = '';
+	let error = '';
 
 	let isPasswordFocused = false;
 
@@ -54,32 +61,30 @@
 		isPasswordFocused = false;
 	}
 
-    let accSelect = 'Account'
-    let AccPopup = '';
-    
-    async function handleFileChange(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+	let accSelect = 'Account';
+	let AccPopup = '';
 
-        await uploadProfilePicture(file);
-    }
+	async function handleFileChange(event) {
+		const file = event.target.files[0];
+		if (!file) return;
 
-    async function saveChanges(){
-        await updateProfileData(usernameInput, DOBInput, phoneNumberInput);
-        dataGot = false;
-    }
+		await uploadProfilePicture(file);
+	}
 
-    function openPopup(param){
-        if(param == 'email'){
-            AccPopup = 'email';
-        }
-        else if(param == 'password'){
-            AccPopup = 'password';
-        }
-        else if(param == 'delete'){
-            AccPopup = 'delete';
-        }
-    }
+	async function saveChanges() {
+		await updateProfileData(usernameInput, DOBInput, phoneNumberInput);
+		dataGot = false;
+	}
+
+	function openPopup(param) {
+		if (param == 'email') {
+			AccPopup = 'email';
+		} else if (param == 'password') {
+			AccPopup = 'password';
+		} else if (param == 'delete') {
+			AccPopup = 'delete';
+		}
+	}
 
 	async function confirmReauth() {
 		const success = await authHandlers.reauthenticate(password);
@@ -155,18 +160,21 @@
 		}
 	}
 
-    function escAccPopup(event){
-        if(event.key === "Escape"){
-            closeAccPopup();
-        }
-    }
+	function escAccPopup(event) {
+		if (event.key === 'Escape') {
+			closeAccPopup();
+		}
+	}
 
-    $: isChanged = usernameInput !== username || DOBInput !== DOB || (phoneNumberInput !== phoneNumber && phoneNumberInput !== '' && phoneNumber !== '');
+	$: isChanged =
+		usernameInput !== username ||
+		DOBInput !== DOB ||
+		(phoneNumberInput !== phoneNumber && phoneNumberInput !== '' && phoneNumber !== '');
 
 	let dataGot = false;
 
-    let accSettingsModal;
-    let accPopupModal;
+	let accSettingsModal;
+	let accPopupModal;
 
 	$: {
 		if (showModal && !showModal.previous && accSettingsModal) {
@@ -176,276 +184,334 @@
 		}
 	}
 
-    $: {
-        if(AccPopup !== '' && !AccPopup.previous && accPopupModal){
-            setTimeout(() => {
-                accPopupModal.focus();
-            }, 0);
-        }
-    }
+	$: {
+		if (AccPopup !== '' && !AccPopup.previous && accPopupModal) {
+			setTimeout(() => {
+				accPopupModal.focus();
+			}, 0);
+		}
+	}
 
-    $: {
-        if ($authStore.data.username !== undefined && $authStore.data.DOB !== undefined && !dataGot) {
-        usernameInput = $authStore.data.username;
-        DOBInput = $authStore.data.DOB;
-        phoneNumberInput = $authStore.data.phoneNumber;
-        dataGot = true;
-    }}
+	$: {
+		if ($authStore.data.username !== undefined && $authStore.data.DOB !== undefined && !dataGot) {
+			usernameInput = $authStore.data.username;
+			DOBInput = $authStore.data.DOB;
+			phoneNumberInput = $authStore.data.phoneNumber;
+			dataGot = true;
+		}
+	}
 
-    function closeReminderPopup() {
-        timerReminder.set(null);
-    }
+	function closeReminderPopup() {
+		timerReminder.set(null);
+	}
 </script>
 
 {#if !loading}
-<div class="appContainer">
-    <Navbar/>
-    {#if $showModal}
-        <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-        <div transition:fade={{ duration: 200 }} class="blurmodal" on:click={closeAcc} on:keydown={(event) => {escAcc(event)}} tabindex="-1" role="dialog" aria-label="Account Settings">
-            <!-- svelte-ignore a11y-click-events-have-key-events -->
-            <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-            <!-- svelte-ignore a11y-no-static-element-interactions -->
-            <div transition:scale={{ start:0.8, end:1,duration: 200}} class = "accountSettings" on:click|stopPropagation tabindex="0" bind:this={accSettingsModal}>
-                <div class="accButtons">
-                    <div class="SettingsTitle">
-                        <h1>Settings</h1>
-                        <p>Manage your account settings</p>
-                    </div>
-                    <label class:selected={accSelect === 'Account'}>
-                        <input type="radio" bind:group={accSelect} value="Account">
-                        <span><i class="fa-solid fa-circle-info"></i> Personal Information</span>
-                    </label>
-                    <label class:selected={accSelect === 'Security'}>
-                        <input type="radio" bind:group={accSelect} value="Security">
-                        <span><i class="fa-solid fa-shield-halved"></i> Security</span>
-                    </label>
-                    <label>
-                        <button on:click={authHandlers.logout}></button>
-                        <span class="error"><i class="fa-solid fa-right-from-bracket error"></i> Logout</span>
-                    </label>
-                </div>
-                <div class="accDetails">
-                    {#if accSelect === 'Account'}
-                        <div>
-                            <h2>Personal Information</h2>
-                            <p>Make changes to your personal information</p>
-                        </div>
-                        <div>
-                            <span class="inputTitle">Profile Picture</span>
-                            <div class="profileOverview">
-                                <label for="profilePic" class="profilePicLabel">
-                                    <img src={profilePic} alt="Your Profile Pict" class="imgContainer">
-                                    <div class="imgOverlay">
-                                        <i class="fa-solid fa-image"></i>
-                                    </div>
-                                </label>
-                                <input type="file" name="profilePic" id="profilePic" value="" accept="image/*" class="fileInput" on:change={handleFileChange}/>
-                                <div>
-                                    <p class="inputTitle">{username}</p>
-                                    <span>{email}</span>
-                                </div>
-                            </div>
-                        </div>
-                        <form>
-                            <div class="pInfGrid">
-                                <div>
-                                    <span class="inputTitle">Username</span>
-                                    <label class = "accInputs">
-                                        <input type="text" placeholder="Username" bind:value={usernameInput}>
-                                    </label>
-                                </div>
-                                    
-                                <div>
-                                    <span class="inputTitle">Date of Birth</span>
-                                    <label class = "accInputs">
-                                        <input type="date" placeholder="Date of Birth" bind:value={DOBInput}>
-                                    </label>
-                                </div>
+	<div class="appContainer">
+		<Navbar />
+		{#if $showModal}
+			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+			<div
+				transition:fade={{ duration: 200 }}
+				class="blurmodal"
+				on:click={closeAcc}
+				on:keydown={(event) => {
+					escAcc(event);
+				}}
+				tabindex="-1"
+				role="dialog"
+				aria-label="Account Settings"
+			>
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<div
+					transition:scale={{ start: 0.8, end: 1, duration: 200 }}
+					class="accountSettings"
+					on:click|stopPropagation
+					tabindex="0"
+					bind:this={accSettingsModal}
+				>
+					<div class="accButtons">
+						<div class="SettingsTitle">
+							<h1>Settings</h1>
+							<p>Manage your account settings</p>
+						</div>
+						<label class:selected={accSelect === 'Account'}>
+							<input type="radio" bind:group={accSelect} value="Account" />
+							<span><i class="fa-solid fa-circle-info"></i> Personal Information</span>
+						</label>
+						<label class:selected={accSelect === 'Security'}>
+							<input type="radio" bind:group={accSelect} value="Security" />
+							<span><i class="fa-solid fa-shield-halved"></i> Security</span>
+						</label>
+						<label>
+							<button on:click={authHandlers.logout}></button>
+							<span class="error"><i class="fa-solid fa-right-from-bracket error"></i> Logout</span>
+						</label>
+					</div>
+					<div class="accDetails">
+						{#if accSelect === 'Account'}
+							<div>
+								<h2>Personal Information</h2>
+								<p>Make changes to your personal information</p>
+							</div>
+							<div>
+								<span class="inputTitle">Profile Picture</span>
+								<div class="profileOverview">
+									<label for="profilePic" class="profilePicLabel">
+										<img src={profilePic} alt="Your Profile Pict" class="imgContainer" />
+										<div class="imgOverlay">
+											<i class="fa-solid fa-image"></i>
+										</div>
+									</label>
+									<input
+										type="file"
+										name="profilePic"
+										id="profilePic"
+										value=""
+										accept="image/*"
+										class="fileInput"
+										on:change={handleFileChange}
+									/>
+									<div>
+										<p class="inputTitle">{username}</p>
+										<span>{email}</span>
+									</div>
+								</div>
+							</div>
+							<form>
+								<div class="pInfGrid">
+									<div>
+										<span class="inputTitle">Username</span>
+										<label class="accInputs">
+											<input type="text" placeholder="Username" bind:value={usernameInput} />
+										</label>
+									</div>
 
-                                <div>
-                                    <span class="inputTitle">Phone Number</span>
-                                    <label class = "accInputs">
-                                        <input type="tel" placeholder="Phone Number (Optional)" bind:value={phoneNumberInput}>
-                                    </label>
-                                </div>
-                            </div>
-                                <label class="saveButton {!isChanged ? 'disabledButton' : ''}">
-                                    <button on:click={saveChanges} disabled={!isChanged}>
-                                        <span>Save Changes</span>
-                                    </button>
-                                </label>
-                                
-                            </form>
-                    {:else if accSelect === 'Security'}
-                        <div>
-                            <h2>Security and Privacy</h2>
-                            <p>Make changes to your Security Settings</p>
-                        </div>
-                        
-                        <div class="securityChangeGrid">
-                            <p class="inputTitle secTitle">Email</p>
-                            <p class = "secContent">{email}</p>
-                            <label class="secButton saveButton">
-                                <button on:click={() => openPopup('email')}>Change Email</button>
-                            </label>
-                            
-                        </div>
-                        <div class="securityChangeGrid">
-                            <p class="inputTitle secTitle">Password</p>
-                            <p class = "secContent">Change your password</p>
-                            <label class="secButton saveButton">
-                                <button on:click={() =>openPopup('password')}>Change Password</button>
-                            </label>
-                        </div>
-                        <div class="securityChangeGrid delAcc">
-                            <p class="inputTitle secTitle">Delete Account</p>
-                            <p class = "secContent">Delete your account</p>
-                            <label class="secButton saveButton">
-                                <button on:click={() =>openPopup('delete')}>Delete Account</button>
-                            </label>
-                        </div>
-                        
-                    {/if}
-                    {#if error !== ''}
-                        <p class="error">{error}</p>
-                    {/if}
-                </div>
-                {#if AccPopup !== ''}
-                <div class="changePopups" transition:fade={{ duration: 200 }} on:click={closeAccPopup} on:keydown={(event) => {escAccPopup(event)}} tabindex="-1" role="dialog" aria-label="Change Popup">
-                    <div class="changeInput" transition:scale={{ start:0.8, end:1,duration: 200}} on:click|stopPropagation tabindex="0" bind:this={accPopupModal}>
-                        {#if AccPopup === 'email' || AccPopup === 'password' || AccPopup === 'delete'}
-                            <h2>Enter your password</h2>
-                            <form class = "popupForm">
-                                <div class='popupDiv'>
-                                    <label class = "accInputs">
-                                        <input type="password" placeholder="Type in your password!" bind:value={password}>
-                                        
-                                    </label>
-                                </div>
-                            
-                                <label class="saveButton">
-                                    <button on:click={confirmReauth}>Confirm</button>
-                                </label>
-                                
-                            </form>
-                        {:else if AccPopup === 'emailInput'}
-                            <h2>Change Email</h2>
-                            <form class = "popupForm">
-                                <div class='popupDiv'>
-                                    <span class="inputTitle">New Email</span>
-                                    <label class = "accInputs">
-                                        <input type="email" placeholder="Enter new email" bind:value={newEmail}>
-                                        
-                                    </label>
-                                </div>
-                            
-                                <label class="saveButton">
-                                    <button on:click={sendChangeEmail}>Send email</button>
-                                </label>
-                                
-                            </form>
+									<div>
+										<span class="inputTitle">Date of Birth</span>
+										<label class="accInputs">
+											<input type="date" placeholder="Date of Birth" bind:value={DOBInput} />
+										</label>
+									</div>
 
-                        {:else if AccPopup === 'passwordInput'}
-                            <h2>Change Password</h2>
-                            <form class = "popupForm">
-                                <div class='popupDiv'>
-                                    <span class="inputTitle">New Password</span>
-                                    <label class = "accInputs">
-                                        <input type="password" placeholder="Enter new password" bind:value={newPassword} on:focus={handlePassFocus} on:blur={handlePassBlur}>
-                                        
-                                    </label>
-                                </div>
-                                <div class='popupDiv'>
-                                    <span class="inputTitle">Confirm New Password</span>
-                                    <label class = "accInputs">
-                                        <input type="password" placeholder="Confirm new password" bind:value={confirmNewPassword}>
-                                    </label>
-                                </div>
-                            
-                                <label class="saveButton">
-                                    <button on:click={changePassword}>Change password</button>
-                                </label>
-                                
-                            </form>
-                            {#if isPasswordFocused}
-                                <div class="reqPopup">
-                                    <h2>Password Requirements</h2>
-                                    <div class="reqCheck">
-                                        <div class="reqCheckmark">
-                                            {#if passwordLengthCheck}
-                                                <i class="fa-solid fa-check"></i>
-                                            {:else}
-                                                <i class="fa-solid fa-xmark"></i>
-                                            {/if}
-                                        </div>
-                                        <p class={passwordLengthCheck ? 'reqSatisfied' : 'reqNotMet'}>8 characters long</p>
-                                    </div>
-                                    <div class="reqCheck">
-                                        <div class="reqCheckmark">
-                                            {#if passwordUppercaseCheck}
-                                                <i class="fa-solid fa-check"></i>
-                                            {:else}
-                                                <i class="fa-solid fa-xmark"></i>
-                                            {/if}
-                                        </div>
-                                        <p class = {passwordUppercaseCheck ? 'reqSatisfied' : 'reqNotMet'}>Have at least 1 uppercase character</p>
-                                    </div>
-                                    <div class="reqCheck">
-                                        <div class="reqCheckmark">
-                                            {#if passwordLowercaseCheck}
-                                                <i class="fa-solid fa-check"></i>
-                                            {:else}
-                                                <i class="fa-solid fa-xmark"></i>
-                                            {/if}
-                                        </div>
-                                        <p class = {passwordLowercaseCheck ? 'reqSatisfied' : 'reqNotMet'}>Have at least 1 lowercase character</p>
-                                    </div>
-                                    <div class="reqCheck">
-                                        <div class="reqCheckmark">
-                                            {#if passwordNumberCheck}
-                                                <i class="fa-solid fa-check"></i>
-                                            {:else}
-                                                <i class="fa-solid fa-xmark"></i>
-                                            {/if}
-                                        </div>
-                                        <p class = {passwordNumberCheck ? 'reqSatisfied' : 'reqNotMet'}>Have at least 1 number</p>
-                                    </div>
-                                    <div class="reqCheck">
-                                        <div class="reqCheckmark">
-                                            {#if passwordSpecialCheck}
-                                                <i class="fa-solid fa-check"></i>
-                                            {:else}
-                                                <i class="fa-solid fa-xmark"></i>
-                                            {/if}
-                                        </div>
-                                        <p class = {passwordSpecialCheck ? 'reqSatisfied' : 'reqNotMet'}>Have at least 1 special character</p>
-                                    </div>
-                                </div>
-                            {/if}
-                            
-                        {:else if AccPopup === 'deleteInput'}
-                            <h2>Delete Account</h2>
-                            <form class = "popupForm">
-                                <div class='popupDiv'>
-                                    <span>Are you sure you want to delete your account? Type your email to proceed!</span>
-                                    <label class = "accInputs">
-                                        <input type="email" placeholder="Enter your email" bind:value={delEmail}>
-                                    </label>
-                                </div>
-                                <div class = 'doublePopupButtons'>
-                                    <label class="saveButton warnButton">
-                                        <button on:click={deleteAccount}>Delete Account</button>
-                                    </label>  
-                                    <label class="saveButton">
-                                        <button on:click={closeAccPopup}>Cancel</button>
-                                    </label>  
-                                </div>
-                                
-                            </form>
+									<div>
+										<span class="inputTitle">Phone Number</span>
+										<label class="accInputs">
+											<input
+												type="tel"
+												placeholder="Phone Number (Optional)"
+												bind:value={phoneNumberInput}
+											/>
+										</label>
+									</div>
+								</div>
+								<label class="saveButton {!isChanged ? 'disabledButton' : ''}">
+									<button on:click={saveChanges} disabled={!isChanged}>
+										<span>Save Changes</span>
+									</button>
+								</label>
+							</form>
+						{:else if accSelect === 'Security'}
+							<div>
+								<h2>Security and Privacy</h2>
+								<p>Make changes to your Security Settings</p>
+							</div>
 
-                        {:else if AccPopup === 'emailSent'}
-                            <span class="ion--checkmark-outline big-icon checkmark"></span>
+							<div class="securityChangeGrid">
+								<p class="inputTitle secTitle">Email</p>
+								<p class="secContent">{email}</p>
+								<label class="secButton saveButton">
+									<button on:click={() => openPopup('email')}>Change Email</button>
+								</label>
+							</div>
+							<div class="securityChangeGrid">
+								<p class="inputTitle secTitle">Password</p>
+								<p class="secContent">Change your password</p>
+								<label class="secButton saveButton">
+									<button on:click={() => openPopup('password')}>Change Password</button>
+								</label>
+							</div>
+							<div class="securityChangeGrid delAcc">
+								<p class="inputTitle secTitle">Delete Account</p>
+								<p class="secContent">Delete your account</p>
+								<label class="secButton saveButton">
+									<button on:click={() => openPopup('delete')}>Delete Account</button>
+								</label>
+							</div>
+						{/if}
+						{#if error !== ''}
+							<p class="error">{error}</p>
+						{/if}
+					</div>
+					{#if AccPopup !== ''}
+						<div
+							class="changePopups"
+							transition:fade={{ duration: 200 }}
+							on:click={closeAccPopup}
+							on:keydown={(event) => {
+								escAccPopup(event);
+							}}
+							tabindex="-1"
+							role="dialog"
+							aria-label="Change Popup"
+						>
+							<div
+								class="changeInput"
+								transition:scale={{ start: 0.8, end: 1, duration: 200 }}
+								on:click|stopPropagation
+								tabindex="0"
+								bind:this={accPopupModal}
+							>
+								{#if AccPopup === 'email' || AccPopup === 'password' || AccPopup === 'delete'}
+									<h2>Enter your password</h2>
+									<form class="popupForm">
+										<div class="popupDiv">
+											<label class="accInputs">
+												<input
+													type="password"
+													placeholder="Type in your password!"
+													bind:value={password}
+												/>
+											</label>
+										</div>
+
+										<label class="saveButton">
+											<button on:click={confirmReauth}>Confirm</button>
+										</label>
+									</form>
+								{:else if AccPopup === 'emailInput'}
+									<h2>Change Email</h2>
+									<form class="popupForm">
+										<div class="popupDiv">
+											<span class="inputTitle">New Email</span>
+											<label class="accInputs">
+												<input type="email" placeholder="Enter new email" bind:value={newEmail} />
+											</label>
+										</div>
+
+										<label class="saveButton">
+											<button on:click={sendChangeEmail}>Send email</button>
+										</label>
+									</form>
+								{:else if AccPopup === 'passwordInput'}
+									<h2>Change Password</h2>
+									<form class="popupForm">
+										<div class="popupDiv">
+											<span class="inputTitle">New Password</span>
+											<label class="accInputs">
+												<input
+													type="password"
+													placeholder="Enter new password"
+													bind:value={newPassword}
+													on:focus={handlePassFocus}
+													on:blur={handlePassBlur}
+												/>
+											</label>
+										</div>
+										<div class="popupDiv">
+											<span class="inputTitle">Confirm New Password</span>
+											<label class="accInputs">
+												<input
+													type="password"
+													placeholder="Confirm new password"
+													bind:value={confirmNewPassword}
+												/>
+											</label>
+										</div>
+
+										<label class="saveButton">
+											<button on:click={changePassword}>Change password</button>
+										</label>
+									</form>
+									{#if isPasswordFocused}
+										<div class="reqPopup">
+											<h2>Password Requirements</h2>
+											<div class="reqCheck">
+												<div class="reqCheckmark">
+													{#if passwordLengthCheck}
+														<i class="fa-solid fa-check"></i>
+													{:else}
+														<i class="fa-solid fa-xmark"></i>
+													{/if}
+												</div>
+												<p class={passwordLengthCheck ? 'reqSatisfied' : 'reqNotMet'}>
+													8 characters long
+												</p>
+											</div>
+											<div class="reqCheck">
+												<div class="reqCheckmark">
+													{#if passwordUppercaseCheck}
+														<i class="fa-solid fa-check"></i>
+													{:else}
+														<i class="fa-solid fa-xmark"></i>
+													{/if}
+												</div>
+												<p class={passwordUppercaseCheck ? 'reqSatisfied' : 'reqNotMet'}>
+													Have at least 1 uppercase character
+												</p>
+											</div>
+											<div class="reqCheck">
+												<div class="reqCheckmark">
+													{#if passwordLowercaseCheck}
+														<i class="fa-solid fa-check"></i>
+													{:else}
+														<i class="fa-solid fa-xmark"></i>
+													{/if}
+												</div>
+												<p class={passwordLowercaseCheck ? 'reqSatisfied' : 'reqNotMet'}>
+													Have at least 1 lowercase character
+												</p>
+											</div>
+											<div class="reqCheck">
+												<div class="reqCheckmark">
+													{#if passwordNumberCheck}
+														<i class="fa-solid fa-check"></i>
+													{:else}
+														<i class="fa-solid fa-xmark"></i>
+													{/if}
+												</div>
+												<p class={passwordNumberCheck ? 'reqSatisfied' : 'reqNotMet'}>
+													Have at least 1 number
+												</p>
+											</div>
+											<div class="reqCheck">
+												<div class="reqCheckmark">
+													{#if passwordSpecialCheck}
+														<i class="fa-solid fa-check"></i>
+													{:else}
+														<i class="fa-solid fa-xmark"></i>
+													{/if}
+												</div>
+												<p class={passwordSpecialCheck ? 'reqSatisfied' : 'reqNotMet'}>
+													Have at least 1 special character
+												</p>
+											</div>
+										</div>
+									{/if}
+								{:else if AccPopup === 'deleteInput'}
+									<h2>Delete Account</h2>
+									<form class="popupForm">
+										<div class="popupDiv">
+											<span
+												>Are you sure you want to delete your account? Type your email to proceed!</span
+											>
+											<label class="accInputs">
+												<input type="email" placeholder="Enter your email" bind:value={delEmail} />
+											</label>
+										</div>
+										<div class="doublePopupButtons">
+											<label class="saveButton warnButton">
+												<button on:click={deleteAccount}>Delete Account</button>
+											</label>
+											<label class="saveButton">
+												<button on:click={closeAccPopup}>Cancel</button>
+											</label>
+										</div>
+									</form>
+								{:else if AccPopup === 'emailSent'}
+									<span class="ion--checkmark-outline big-icon checkmark"></span>
 
 									<h2>Email Sent</h2>
 									<span
@@ -464,73 +530,94 @@
 									</label>
 								{/if}
 
-                        {#if errorPopup !== ''}
-                            <p class="error">{errorPopup}</p>
-                        {/if}
+								{#if errorPopup !== ''}
+									<p class="error">{errorPopup}</p>
+								{/if}
+							</div>
+						</div>
+					{/if}
+				</div>
+			</div>
+		{/if}
 
-                        
-                    </div>
-                </div>
-                {/if}
+		{#if $timerReminder}
+			<!-- svelte-ignore a11y-click-events-have-key-events -->
+			<!-- svelte-ignore a11y-no-noninteractive-tabindex -->
+			<!-- svelte-ignore a11y-no-static-element-interactions -->
+			<!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+			<div
+				transition:fade={{ duration: 200 }}
+				class="blurmodal"
+				on:click={closeReminderPopup}
+				on:keydown={(event) => {
+					if (event.key === 'Escape') closeReminderPopup();
+				}}
+				tabindex="-1"
+				role="dialog"
+				aria-label="Timer Reminder"
+			>
+				<!-- svelte-ignore a11y-click-events-have-key-events -->
+				<!-- svelte-ignore a11y-no-static-element-interactions -->
+				<div
+					transition:scale={{ start: 0.8, end: 1, duration: 200 }}
+					class="reminderPopup"
+					on:click|stopPropagation
+					tabindex="0"
+				>
+					<span
+						class={$timerReminder == 'work'
+							? 'carbon--book medium-icon'
+							: 'codicon--coffee medium-icon'}
+					></span>
+					<h2>{$timerReminder === 'work' ? 'Time to Work!' : 'Time for a Break!'}</h2>
+					<label class="saveButton">
+						<button on:click={closeReminderPopup}>Close</button>
+					</label>
+				</div>
+			</div>
+		{/if}
 
-            </div>
-            
-        </div>
-    {/if}
-
-    {#if $timerReminder}
-    <!-- svelte-ignore a11y-click-events-have-key-events -->
-    <!-- svelte-ignore a11y-no-noninteractive-tabindex -->
-    <!-- svelte-ignore a11y-no-static-element-interactions -->
-    <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
-    <div transition:fade={{ duration: 200 }} class="blurmodal" on:click={closeReminderPopup} on:keydown={(event) => {if (event.key === "Escape") closeReminderPopup()}} tabindex="-1" role="dialog" aria-label="Timer Reminder">
-        <!-- svelte-ignore a11y-click-events-have-key-events -->
-        <!-- svelte-ignore a11y-no-static-element-interactions -->
-        <div transition:scale={{ start:0.8, end:1,duration: 200}} class="reminderPopup" on:click|stopPropagation tabindex="0">
-            <span class = {$timerReminder == 'work' ? 'carbon--book medium-icon' : 'codicon--coffee medium-icon'}></span>
-            <h2>{$timerReminder === 'work' ? 'Time to Work!' : 'Time for a Break!'}</h2>
-            <label class="saveButton">
-                <button on:click={closeReminderPopup}>Close</button>
-            </label>
-        </div>
-    </div>
-    {/if}
-
-    <main class={$page.url.pathname === '/app/music' ? 'main noPadding' : 'main'}>
-        <slot/>
-    </main>
-</div>
+		<main
+			class={$page.url.pathname.startsWith('/app/music')
+				? 'main noPadding'
+				: $page.url.pathname.startsWith('/app/notes/')
+					? 'main noPadding'
+					: 'main'}
+		>
+			<slot />
+		</main>
+	</div>
 {/if}
 
 <style>
-    /* Add the styles for the reminder popup */
-    .reminderPopup {
-        color: var(--text_high_contrast);
-        z-index: 900;
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        justify-content: center;
-        padding: 2rem;
-        background-color: var(--seasalt);
-        /* width: 30rem; */
-        max-width: 80%;
-        max-height: 50%;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border-radius: 30px;
-        gap: 10px;
-        overflow: hidden;
-    }
+	/* Add the styles for the reminder popup */
+	.reminderPopup {
+		color: var(--text_high_contrast);
+		z-index: 900;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 2rem;
+		background-color: var(--seasalt);
+		/* width: 30rem; */
+		max-width: 80%;
+		max-height: 50%;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		border-radius: 30px;
+		gap: 10px;
+		overflow: hidden;
+	}
 
-    .reqPopup{
-        transform: translate(130%, -15%);
-    }
-    .delAcc{
-        margin-top: auto;
-    }
+	.reqPopup {
+		transform: translate(130%, -15%);
+	}
+	.delAcc {
+		margin-top: auto;
+	}
 
 	.secTitle {
 		grid-area: title;
@@ -575,21 +662,21 @@
 		gap: 1rem;
 	}
 
-    button {
-        background: none;
-        border: none;
-        padding: 0;
-        cursor: pointer;
-    }
-    
-    input{
-        width: 100%;
-        height: 100%;
-        border: none;
-        background : transparent;
-        color: var(--text_high_contrast);
-        padding: 0.5rem;
-    }
+	button {
+		background: none;
+		border: none;
+		padding: 0;
+		cursor: pointer;
+	}
+
+	input {
+		width: 100%;
+		height: 100%;
+		border: none;
+		background: transparent;
+		color: var(--text_high_contrast);
+		padding: 0.5rem;
+	}
 
 	.pInfGrid {
 		display: grid;
@@ -599,6 +686,7 @@
 	}
 
 	.main {
+		/* padding: top right bottom left */
 		padding: 3rem 3rem 0 3rem;
 		margin-left: 18rem;
 		width: calc(100% - 18rem);
@@ -610,11 +698,11 @@
 		padding: 0;
 	}
 
-    .imgContainer{
-        width: 100px;
-        height: 100px;
-        object-fit: cover;
-    }
+	.imgContainer {
+		width: 100px;
+		height: 100px;
+		object-fit: cover;
+	}
 
 	input[type='radio'] {
 		position: absolute;
@@ -623,37 +711,37 @@
 		height: 0;
 	}
 
-    .accButtons label {
-        transition-timing-function: ease-in-out;
-        display: inline-block;
-        background-color: var(--seasalt);
-        padding: 10px 10px 10px 20px;
-        margin-left: 2rem;
-        border-radius: 10px 0px 0px 10px; 
-        font-size: 1rem;
-        cursor: pointer;
-    }
+	.accButtons label {
+		transition-timing-function: ease-in-out;
+		display: inline-block;
+		background-color: var(--seasalt);
+		padding: 10px 10px 10px 20px;
+		margin-left: 2rem;
+		border-radius: 10px 0px 0px 10px;
+		font-size: 1rem;
+		cursor: pointer;
+	}
 
-    .accButtons label:not(.selected):hover {
-        background-color: var(--dim_linen);
-        margin-left: 0;
-    }
+	.accButtons label:not(.selected):hover {
+		background-color: var(--dim_linen);
+		margin-left: 0;
+	}
 
-    .accButtons label.selected{
-        background-color: var(--almond);
-        margin-left: 5rem;
-        cursor: default;
-    }
+	.accButtons label.selected {
+		background-color: var(--almond);
+		margin-left: 5rem;
+		cursor: default;
+	}
 
-    .accButtons{
-        display: flex;
-        flex-direction: column;
-        padding-top: 2rem;
-        background: var(--seasalt);
-        width: 25%;
-        min-width: 18rem;
-        height: 100%;
-    }
+	.accButtons {
+		display: flex;
+		flex-direction: column;
+		padding-top: 2rem;
+		background: var(--seasalt);
+		width: 25%;
+		min-width: 18rem;
+		height: 100%;
+	}
 
 	.profilePicLabel {
 		display: flex;
@@ -668,23 +756,23 @@
 		position: relative;
 	}
 
-    .accDetails{
-        display: flex;
-        flex-direction: column;
-        gap: 2rem;
-        padding: 3rem;
-        background: var(--default_white);
-        width: 75%;
-        height: 100%;
-        overflow: scroll;
-        scrollbar-width: none;
-    }
+	.accDetails {
+		display: flex;
+		flex-direction: column;
+		gap: 2rem;
+		padding: 3rem;
+		background: var(--default_white);
+		width: 75%;
+		height: 100%;
+		overflow: scroll;
+		scrollbar-width: none;
+	}
 
-    .SettingsTitle{
-        width: 100%;
-        height: 8rem;
-        padding-left: 2rem;
-    }
+	.SettingsTitle {
+		width: 100%;
+		height: 8rem;
+		padding-left: 2rem;
+	}
 
 	.blurmodal {
 		position: absolute;
@@ -694,25 +782,25 @@
 		height: 100%;
 		background: rgba(0, 0, 0, 0.5);
 		backdrop-filter: blur(5px);
-		z-index: 1;
+		z-index: 1000;
 	}
 
-    .accountSettings{
-        color: var(--text_high_contrast);
-        z-index: 90000;
-        display: flex;
-        flex-direction: row;
-        width: 80rem;
-        max-width: 80%;
-        max-height: 80%;
-        height: 40rem;
-        position: absolute;
-        top: 50%;
-        left: 50%;
-        transform: translate(-50%, -50%);
-        border-radius: 30px;
-        overflow: hidden;
-    }
+	.accountSettings {
+		color: var(--text_high_contrast);
+		z-index: 90000;
+		display: flex;
+		flex-direction: row;
+		width: 80rem;
+		max-width: 80%;
+		max-height: 80%;
+		height: 40rem;
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		border-radius: 30px;
+		overflow: hidden;
+	}
 
 	.appContainer {
 		display: flex;
@@ -732,4 +820,3 @@
 		cursor: pointer;
 	}
 </style>
-

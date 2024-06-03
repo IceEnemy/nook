@@ -60,6 +60,7 @@ export const updateFlashcardStore = {
             console.log(`Flashcard ${flashcardId} deleted successfully`);
         } catch (error) {
             console.error('Error deleting flashcard:', error);
+            console.log(`Failed to delete flashcard ${flashcardId}`);
             throw new Error('Failed to delete flashcard');
         }
     },

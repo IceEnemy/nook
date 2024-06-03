@@ -88,6 +88,7 @@
 	}
 
 	function openModal() {
+		console.log('open modal')
 		isOpen = true;
 	}
 
@@ -122,10 +123,12 @@
 
 <Modal {isOpen} bind:flashcardName onSubmit={handleNewFlashcard} onCancel={closeModal} />
 
-<div id="noteContainer">
-	<div id="userlist"></div>
-	<div id="firepad"></div>
-	<button on:click={openModal}>Generate Flashcard</button>
+<div class="main2">
+	<div id="noteContainer">
+		<div id="userlist"></div>
+		<div id="firepad"></div>
+		<button id="generateButton" on:click={openModal}>Generate Flashcard</button>
+	</div>
 </div>
 
 {#if loading}
@@ -136,6 +139,11 @@
 {/if}
 
 <style>
+	.main2 {
+		width: 100%;
+		height: 100%;
+		background-color: var(--linen);
+	}
 	.loading-indicator {
 		position: fixed;
 		top: 50%;
@@ -147,29 +155,39 @@
 		border-radius: 8px;
 		z-index: 1000; /* Ensure it's on top of other content */
 	}
-	
+	#userlist {
+		position: absolute;
+		top: 0;
+		width: 100%;
+		height: auto;
+		background-color: var(--subtle_app_bg);
+	}
 	#noteContainer {
 		display: flex;
 		flex-direction: column;
 	}
-	#userlist {
-		position: absolute;
-		left: 0;
-		top: 0;
-		bottom: 0;
-		height: auto;
-		background-color: wheat;
-	}
 	#firepad {
 		position: absolute;
-		left: 175px;
+		/* left: 175px; */
+		left: 5%;
 		top: 0px;
 		bottom: 0;
-		right: 0;
+		right: 5%;
+		z-index: 10;
 	}
 	button {
 		position: absolute;
-		left: 0;
+		right: 0;
 		top: 0;
+	}
+	#generateButton {
+		padding: 8px;
+		border-radius: 10px;
+		margin: 11px 16px 0 0;
+		border: none;
+		background-color: var(--linen);
+		color: var(--van_dyke);
+		box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1); /* Example box shadow */
+		z-index: 20;
 	}
 </style>
