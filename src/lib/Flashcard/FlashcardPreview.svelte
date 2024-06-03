@@ -1,8 +1,13 @@
 <script>
 	import { goto } from '$app/navigation';
 	import { createEventDispatcher } from 'svelte';
+	import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+
 	export let link = '';
 	export let title = '';
+	export let date = '';
+	export let parent = '';
+	export let parentId = '';
 
 	let editOpen = false;
 
@@ -12,22 +17,18 @@
 		dispatch('openPopup', { detail, link, title });
 	}
 
-	function handleRedirect() {
-		goto(`/app/flashcards/${link}`);
+	function handleRedirect(type) {
+		if (type === 'flashcard') goto(`/app/flashcards/${link}`);
+		else if (type === 'note') goto(`/app/notes/${parentId}`);
 	}
 
 	function handleOpenEdit() {
-		// event.stopPropagation();
 		console.log('open edit');
 		editOpen = !editOpen;
-	}
-
-	function requestOpenPopupflashcard(detail) {
-		dispatch('openPopup', { detail, link, title });
+		console.log(link);
 	}
 
 	function clickOutside(node) {
-		// Event handler to check if click is outside the node
 		const handleClick = (event) => {
 			if (node && !node.contains(event.target) && !event.defaultPrevented) {
 				editOpen = false;
@@ -41,25 +42,24 @@
 		};
 
 		document.addEventListener('click', handleClick, true);
-
 		document.addEventListener('keydown', handleEscape, true);
 
 		return {
 			destroy() {
 				document.removeEventListener('click', handleClick, true);
+				document.removeEventListener('keydown', handleEscape, true);
 			}
 		};
 	}
 </script>
 
-<button class="flashcardButton" on:dblclick={handleRedirect}>
-	<div class="textTrunc">
-		<span class="material-symbols--folder icon"></span>
-		<p class="text">{title}</p>
-	</div>
+<button class="flashcardButton">
+	<p id="flashcard" on:dblclick={() => handleRedirect('flashcard')}>{title}</p>
+	<p id="note" on:dblclick={() => handleRedirect('note')}>{parent}</p>
+	<p>{date}</p>
 	<div class="dropdown" use:clickOutside>
 		<button on:click={handleOpenEdit} on:dblclick={(event) => event.stopPropagation()}>
-			<span class="tabler--dots icon"></span>
+			<span class="vertical--dots icon"></span>
 		</button>
 		{#if editOpen}
 			<div class="dropdown-content">
@@ -71,7 +71,17 @@
 </button>
 
 <style>
-	.flashcardButton button {
+	.flashcardButton {
+		display: grid;
+		grid-template-columns: 32vw 1fr 1fr 50px;
+		gap: 10px;
+		padding: 10px;
+		align-items: center;
+		text-align: left;
+		border-bottom: 2px solid var(--darker_van_dyke);
+		width: 100%;
+	}
+	button {
 		background: none;
 		border: none;
 		cursor: pointer;
@@ -80,39 +90,7 @@
 		right: 0;
 		min-width: 100px;
 	}
-	.textTrunc {
-		width: 80%;
-		display: flex;
-		align-items: center;
-		gap: 5px;
-	}
-	.text {
-		overflow: hidden;
-		white-space: nowrap;
-		text-overflow: ellipsis;
-		flex-grow: 1; /* Take up remaining space */
-	}
-	.flashcardButton {
-		position: relative;
-		display: flex;
-		height: 3rem;
-		text-align: left;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.5rem;
-		overflow: visible;
-		padding: 0 1rem 0 1rem;
-		color: var(--coyote);
-		background: var(--dim_linen);
-		border: none;
-		border-radius: 5px;
-	}
-	.flashcardButton:hover {
-		background: var(--almond);
-	}
 	p {
-		font-size: 1rem;
-		color: var(--text_high_contrast);
-		font-weight: 600;
+		color: var(--coyote);
 	}
 </style>

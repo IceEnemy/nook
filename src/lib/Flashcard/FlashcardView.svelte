@@ -1,27 +1,21 @@
 <script>
-	// import FolderPreview from "./FolderPreview.svelte";
 	import FlashcardPreview from './FlashcardPreview.svelte';
-	// import NotePreview from "./NotePreview.svelte";
 	import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 	import { db, auth } from '$lib/firebase/firebase';
 	import { onMount, onDestroy } from 'svelte';
-	import { authStore, updateNoteStore } from '$lib/store/store.js';
 	import { updateFlashcardStore } from '$lib/store/flashcard.js';
-	import Authenticate from '$lib/Authenticate.svelte';
-	import NoteNav from '$lib/noteNav.svelte';
-	import { get } from 'svelte/store';
 	import { fade, scale } from 'svelte/transition';
+	import { goto } from '$app/navigation';
 
-	export let ref = '';
+	let ref = '';
 	let dataGot = false;
 	let initialData = true;
 
 	let dropdownOpen = { new: false, filter: false, sort: false };
-
 	let editDetail = '';
 	let newPopup = '';
 	let flashcardName = '';
-	let parentNoteId = '';
+	let current = '';
 
 	const filterOptions = ['Last edited', 'Recently created', 'Sort A-Z'];
 	let filterSelection = filterOptions[0];
@@ -43,7 +37,6 @@
 	let unsubscribe;
 
 	function listenEditDetail(event) {
-		console.log('hey!!');
 		const { detail, link, title } = event.detail;
 		newPopup = detail;
 		editDetail = link;
@@ -51,8 +44,8 @@
 	}
 
 	$: filteredFlashcards = searched
-		? flashcards.filter((flashcards) =>
-				flashcards.title.toLowerCase().includes(searched.toLowerCase())
+		? flashcards.filter((flashcard) =>
+				flashcard.title.toLowerCase().includes(searched.toLowerCase())
 			)
 		: flashcards;
 
@@ -61,15 +54,15 @@
 		(filteredFlashcards = filteredFlashcards.sort(sortingFunction));
 
 	function sortingFunction(a, b) {
-		let compare = 0; // Default to 'equal'
+		let compare = 0;
 		switch (filterSelection) {
-			case 'A-Z':
+			case 'Sort A-Z':
 				compare = a.title.localeCompare(b.title);
 				break;
-			case 'Last Edit':
+			case 'Last edited':
 				compare = new Date(b.lastEdited) - new Date(a.lastEdited);
 				break;
-			case 'Created':
+			case 'Recently created':
 				compare = new Date(b.created) - new Date(a.created);
 				break;
 			default:
@@ -85,10 +78,15 @@
 		const files = docSnap.data().flashcards;
 		for (const file of files) {
 			const flashcardDoc = await getDoc(doc(db, 'flashcards', file.flashcardId));
-			flashcards.push({ ...flashcardDoc.data(), flashcardId: file.flashcardId });
-			console.log(flashcards);
+			const flashcardData = flashcardDoc.data();
+			const parentNoteName = await getNoteName(flashcardData.parentNoteId);
+			flashcards.push({ ...flashcardData, flashcardId: file.flashcardId, parentNoteName });
 		}
 		flashcards.sort(sortingFunction);
+	}
+
+	function handleRedirect() {
+		goto(`/app/flashcards/${link}`);
 	}
 
 	async function getFlashcardData() {
@@ -96,7 +94,15 @@
 
 		if (unsubscribe) unsubscribe();
 
-		const docRef = ref ? doc(db, 'flashcards', ref) : doc(db, 'users', auth.currentUser.uid);
+		let docRef;
+		if (ref && ref.trim() !== '') {
+			docRef = doc(db, 'flashcards', ref);
+		} else if (auth.currentUser && auth.currentUser.uid) {
+			docRef = doc(db, 'users', auth.currentUser.uid);
+		} else {
+			console.error('Invalid document reference. Please provide a valid document reference.');
+			return;
+		}
 
 		unsubscribe = onSnapshot(docRef, (doc) => {
 			dataGot = false;
@@ -109,16 +115,16 @@
 				})
 				.catch((error) => {
 					console.error('Error filling arrays:', error);
-					dataGot = false; // Consider setting to false or handling error state
+					dataGot = false;
 				});
 		});
 	}
+
 	onDestroy(() => {
 		if (unsubscribe) return unsubscribe();
 	});
 
 	function clickOutside(node, name) {
-		// Event handler to check if click is outside the node
 		const handleClick = (event) => {
 			if (name == 'popup') {
 				if (node && !node.contains(event.target) && !event.defaultPrevented) {
@@ -144,25 +150,39 @@
 		};
 
 		document.addEventListener('click', handleClick, true);
-
 		document.addEventListener('keydown', handleEscape, true);
 
 		return {
 			destroy() {
 				document.removeEventListener('click', handleClick, true);
+				document.removeEventListener('keydown', handleEscape, true);
 			}
 		};
 	}
 
-	async function handleAddFlashcard(title, NoteId) {
+	function formatDate(timestamp) {
+		let date = new Date(timestamp);
+		let day = date.getDate();
+		let month = date.toLocaleString('default', { month: 'long' });
+		let year = date.getFullYear();
+
+		return `${month} ${day}, ${year}`;
+	}
+
+	async function getNoteName(noteId) {
+		let noteName = '';
+		let noteRef = doc(db, 'notes', noteId);
+
 		try {
-			await updateFlashcardStore.addFlashcard(title, NoteId);
-		} catch (e) {
-			console.log(e);
+			const docSnapshot = await getDoc(noteRef);
+			if (docSnapshot.exists()) {
+				noteName = docSnapshot.data().title;
+			}
+		} catch (error) {
+			console.error('Error getting note name:', error);
 		}
-		newPopup = '';
-		flashcardName = '';
-		parentNoteId = '';
+
+		return noteName;
 	}
 </script>
 
@@ -176,7 +196,6 @@
 						<span class="bxs--down-arrow small-icon"></span>
 					</button>
 					{#if dropdownOpen.filter}
-						<!-- Conditional rendering for dropdown content -->
 						<div class="dropdown-content">
 							{#each filterOptions as option}
 								{#if option !== filterSelection}
@@ -190,7 +209,6 @@
 									</button>
 								{/if}
 							{/each}
-							<!-- Add more options as needed -->
 						</div>
 					{/if}
 				</div>
@@ -213,30 +231,41 @@
 									</button>
 								{/if}
 							{/each}
-							<!-- Add more options as needed -->
 						</div>
 					{/if}
 				</div>
 			</div>
 			<label>
 				<span class="ic--round-search icon"></span>
-				<input type="text" class="searchbar" placeholder="Seach Flashcards" bind:value={searched} />
+				<input
+					type="text"
+					class="searchbar"
+					placeholder="Search Flashcards"
+					bind:value={searched}
+				/>
 			</label>
 		</form>
 
 		<div class="flashcardContainer">
-			<p>flashcards</p>
-
-			<div class="flashcardGrid">
-				{#each filteredFlashcards as flash}
+			<div class="flashcardHeader">
+				<p>Title</p>
+				<p>Source</p>
+				<p>Date Created</p>
+				<p class="vertical--dots icon"></p>
+			</div>
+			{#each filteredFlashcards as flash}
+				<div class="flashcard">
 					<FlashcardPreview
 						title={flash.title}
 						link={flash.flashcardId}
+						parent={flash.parentNoteName}
+						parentId={flash.parentNoteId}
+						date={formatDate(flash.created)}
 						on:openPopup={listenEditDetail}
+						on:click={(event) => event.stopPropagation()}
 					/>
-					<!-- {/if} -->
-				{/each}
-			</div>
+				</div>
+			{/each}
 		</div>
 		{#if newPopup !== ''}
 			<div class="changePopups" transition:fade={{ duration: 200 }}>
@@ -245,22 +274,7 @@
 					transition:scale={{ start: 0.8, end: 1, duration: 200 }}
 					use:clickOutside={'popup'}
 				>
-					{#if newPopup === 'flashcard!'}
-						<h2>New flashcard name</h2>
-						<form class="popupForm">
-							<div>
-								<label class="accInputs">
-									<input type="text" placeholder="Flashcard title" bind:value={flashcardName} />
-									<input type="text" placeholder="Note ID" bind:value={parentNoteId} />
-								</label>
-							</div>
-							<label class="saveButton">
-								<button on:click={() => handleAddFlashcard(flashcardName, parentNoteId)}
-									>Confirm</button
-								>
-							</label>
-						</form>
-					{:else if newPopup === 'titleFlashcard'}
+					{#if newPopup === 'titleFlashcard'}
 						<h2>Edit title</h2>
 						<form class="popupForm">
 							<div>
@@ -268,12 +282,14 @@
 									<input type="text" placeholder="New title" bind:value={flashcardName} />
 								</label>
 							</div>
-
 							<label class="saveButton">
 								<button
-									on:click={() =>
-										updateFlashcardStore.updateTitleFlashcard(editDetail, flashcardName)}
-									>Confirm</button
+									on:click={() => {
+										updateFlashcardStore.updateTitleFlashcard(editDetail, flashcardName);
+										newPopup = '';
+										flashcardName = '';
+										location.reload();
+									}}>Confirm</button
 								>
 							</label>
 						</form>
@@ -282,6 +298,7 @@
 						<form class="popupForm">
 							<label class="saveButton">
 								<button
+									type="button"
 									on:click={() => {
 										updateFlashcardStore.deleteFlashcard(editDetail);
 										newPopup = '';
@@ -322,11 +339,16 @@
 		width: 100%;
 		margin-bottom: 1rem;
 	}
-	.flashcardGrid {
+	.flashcardHeader {
 		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-		gap: 1rem;
-		padding-right: 0.5rem;
+		grid-template-columns: 32vw 1fr 1fr 50px;
+		gap: 10px;
+		padding: 10px;
+		align-items: center;
+		border-bottom: 2px solid var(--darker_van_dyke);
+	}
+	.flashcardHeader p {
+		color: var(--van_dyke);
 	}
 	.text {
 		overflow: hidden;
@@ -345,7 +367,6 @@
 		padding: 0.5rem 1rem;
 		border-radius: 20px;
 		height: 3rem;
-		/* width: 120px; */
 	}
 	.varAddButton {
 		width: 150px;
