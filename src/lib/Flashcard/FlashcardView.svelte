@@ -237,7 +237,12 @@
 			</div>
 			<label>
 				<span class="ic--round-search icon"></span>
-				<input type="text" class="searchbar" placeholder="Search Flashcards" bind:value={searched} />
+				<input
+					type="text"
+					class="searchbar"
+					placeholder="Search Flashcards"
+					bind:value={searched}
+				/>
 			</label>
 		</form>
 
@@ -284,8 +289,9 @@
 										newPopup = '';
 										flashcardName = '';
 										location.reload();
-									}}>Confirm</button>
-								</label>
+									}}>Confirm</button
+								>
+							</label>
 						</form>
 					{:else if newPopup === 'deleteFlashcard'}
 						<h2>Are you sure you want to delete this flashcard?</h2>
@@ -297,7 +303,8 @@
 										updateFlashcardStore.deleteFlashcard(editDetail);
 										newPopup = '';
 										flashcardName = '';
-									}}>Confirm</button>
+									}}>Confirm</button
+								>
 							</label>
 						</form>
 					{/if}
