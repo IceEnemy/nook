@@ -7,6 +7,7 @@
 	import { authStore } from '$lib/store/store.js';
 	import OptionButton from '$lib/assets/OptionButton.svelte';
 	import NookLogo from '$lib/assets/NookLogo.svelte';
+	import FolderItem from '$lib/NoteAccess/FolderItem.svelte';
 	import {
 		timerState,
 		globalWorkTime,
@@ -36,9 +37,7 @@
 	$: username = $authStore.data?.username || 'Loading..';
 	$: profilePic = $authStore.data?.profilePic || 'https://via.placeholder.com/150';
 
-	let recentlyUpdatedNotes = [];
 	let recentlyContacted = ['Alice', 'Bob', 'Charlie'];
-	let docSnap = '';
 	let unsubscribe;
 
 	const navOption1 = [
@@ -77,6 +76,8 @@
 			: $timer / $globalBreakTime
 		: 0;
 
+	let folders = [];
+
 	onMount(async () => {
 		await handleRecentNotes();
 	});
@@ -99,14 +100,14 @@
 		unsubscribe = onSnapshot(userDocRef, async (docSnapshot) => {
 			if (!docSnapshot.exists()) {
 				console.log('User document not found.');
-				recentlyUpdatedNotes = [];
+				folders = [];
 				return;
 			}
 
 			let userData = docSnapshot.data();
 			if (!userData.notes || userData.notes.length === 0) {
 				console.log('No notes found.');
-				recentlyUpdatedNotes = [];
+				folders = [];
 				return;
 			}
 
@@ -115,34 +116,54 @@
 	}
 
 	async function fillArrays(notes) {
-		console.log('Notes parameter:', notes); // Log the notes parameter
-
 		try {
-			// Filter out objects with type other than "note"
-			const noteIds = notes.filter((note) => note.type === 'note').map((note) => note.noteId);
+			let folderMap = new Map();
 
-			let notesArray = [];
-			for (const noteId of noteIds) {
-				const noteDocRef = doc(db, 'notes', noteId);
-				const noteDoc = await getDoc(noteDocRef);
-				if (noteDoc.exists()) {
-					const noteData = noteDoc.data();
-					notesArray.push({ ...noteData, noteId });
+			for (const note of notes) {
+				// console.log('Note:', note);
+				if (note.type === 'note') {
+					const noteDocRef = doc(db, 'notes', note.noteId);
+					const noteDoc = await getDoc(noteDocRef);
+					if (noteDoc.exists()) {
+						const noteData = noteDoc.data();
+						let folderName = noteData.folder || 'Uncategorized';
+						if (!folderMap.has(folderName)) {
+							folderMap.set(folderName, []);
+						}
+						folderMap.get(folderName).push({ ...noteData, noteId: note.noteId });
+						// console.log('Folder name:', folderName);
+					}
+				} else if (note.type === 'folder') {
+					const folderDocRef = doc(db, 'folders', note.noteId);
+					const folderDoc = await getDoc(folderDocRef);
+					if (folderDoc.exists()) {
+						const folderData = folderDoc.data();
+						const folderNotes = [];
+
+						for (const folderNote of folderData.notes) {
+							const noteDocRef = doc(db, 'notes', folderNote.noteId);
+							const noteDoc = await getDoc(noteDocRef);
+							if (noteDoc.exists()) {
+								const noteData = noteDoc.data();
+								folderNotes.push({ ...noteData, noteId: folderNote.noteId });
+							}
+						}
+						folderMap.set(folderData.title, folderNotes);
+					}
 				}
 			}
 
-			notesArray.sort(sortByLastEdited);
-			recentlyUpdatedNotes = notesArray.map((note) => note.title);
-			console.log('Note loaded and arrays filled');
-			console.log('Recently updated notes:', recentlyUpdatedNotes);
+			// Sort notes within each folder by last edited date
+			for (const [folderName, notes] of folderMap) {
+				notes.sort((a, b) => new Date(a.lastEdited) - new Date(b.lastEdited));
+			}
+
+			folders = Array.from(folderMap, ([name, notes]) => ({ name, notes }));
+			console.log('Data loaded and arrays filled');
 		} catch (error) {
 			console.error('Error filling arrays:', error);
-			recentlyUpdatedNotes = [];
+			folders = [];
 		}
-	}
-
-	function sortByLastEdited(a, b) {
-		return b.lastEdited - a.lastEdited;
 	}
 </script>
 
@@ -171,15 +192,8 @@
 	</ul>
 	<ul class="navSection">
 		<h2 class="sectionTitle">Recently Updated</h2>
-		{#each recentlyUpdatedNotes as note}
-			<li>{note}</li>
-		{/each}
-	</ul>
-
-	<ul class="navSection">
-		<h2 class="sectionTitle">Recently Contacted</h2>
-		{#each recentlyContacted as contact}
-			<li>{contact}</li>
+		{#each folders as folder}
+			<FolderItem {folder} />
 		{/each}
 	</ul>
 	<div class="accountNav">
