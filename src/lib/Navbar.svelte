@@ -1,7 +1,8 @@
 <script>
 	import { onMount, onDestroy } from 'svelte';
 	import { authHandlers, showModal } from '$lib/store/store';
-	import { auth } from '$lib/firebase/firebase.js';
+	import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+	import { db, auth } from '$lib/firebase/firebase';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/store/store.js';
 	import OptionButton from '$lib/assets/OptionButton.svelte';
@@ -35,8 +36,10 @@
 	$: username = $authStore.data?.username || 'Loading..';
 	$: profilePic = $authStore.data?.profilePic || 'https://via.placeholder.com/150';
 
-	let starredNotes = ['Note 1', 'Note 2', 'Note 3'];
+	let recentlyUpdatedNotes = [];
 	let recentlyContacted = ['Alice', 'Bob', 'Charlie'];
+	let docSnap = '';
+	let unsubscribe;
 
 	const navOption1 = [
 		{ name: 'Dashboard', icon: 'material-symbols-light--dashboard-outline' },
@@ -73,6 +76,74 @@
 			? $timer / $globalWorkTime
 			: $timer / $globalBreakTime
 		: 0;
+
+	onMount(async () => {
+		await handleRecentNotes();
+	});
+
+	onDestroy(() => {
+		if (unsubscribe) {
+			unsubscribe();
+		}
+	});
+
+	async function handleRecentNotes() {
+		let user = auth.currentUser;
+		if (!user) {
+			console.log('No user is signed in.');
+			return;
+		}
+
+		let userDocRef = doc(db, 'users', user.uid);
+
+		unsubscribe = onSnapshot(userDocRef, async (docSnapshot) => {
+			if (!docSnapshot.exists()) {
+				console.log('User document not found.');
+				recentlyUpdatedNotes = [];
+				return;
+			}
+
+			let userData = docSnapshot.data();
+			if (!userData.notes || userData.notes.length === 0) {
+				console.log('No notes found.');
+				recentlyUpdatedNotes = [];
+				return;
+			}
+
+			await fillArrays(userData.notes);
+		});
+	}
+
+	async function fillArrays(notes) {
+		console.log('Notes parameter:', notes); // Log the notes parameter
+
+		try {
+			// Filter out objects with type other than "note"
+			const noteIds = notes.filter((note) => note.type === 'note').map((note) => note.noteId);
+
+			let notesArray = [];
+			for (const noteId of noteIds) {
+				const noteDocRef = doc(db, 'notes', noteId);
+				const noteDoc = await getDoc(noteDocRef);
+				if (noteDoc.exists()) {
+					const noteData = noteDoc.data();
+					notesArray.push({ ...noteData, noteId });
+				}
+			}
+
+			notesArray.sort(sortByLastEdited);
+			recentlyUpdatedNotes = notesArray.map((note) => note.title);
+			console.log('Note loaded and arrays filled');
+			console.log('Recently updated notes:', recentlyUpdatedNotes);
+		} catch (error) {
+			console.error('Error filling arrays:', error);
+			recentlyUpdatedNotes = [];
+		}
+	}
+
+	function sortByLastEdited(a, b) {
+		return b.lastEdited - a.lastEdited;
+	}
 </script>
 
 <nav class="navbar">
@@ -99,11 +170,12 @@
 		{/each}
 	</ul>
 	<ul class="navSection">
-		<h2 class="sectionTitle">Starred</h2>
-		{#each starredNotes as note}
+		<h2 class="sectionTitle">Recently Updated</h2>
+		{#each recentlyUpdatedNotes as note}
 			<li>{note}</li>
 		{/each}
 	</ul>
+
 	<ul class="navSection">
 		<h2 class="sectionTitle">Recently Contacted</h2>
 		{#each recentlyContacted as contact}

@@ -9,11 +9,11 @@
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
 		"lint": "prettier --check . && eslint .",
-		"format": "prettier --write .",
-		"predeploy": "npm run build",
-		"deploy": "gh-pages -d dist"
+		"format": "prettier --write ."
 	},
 	"devDependencies": {
+		"@event-calendar/core": "^3.0.2",
+		"@event-calendar/time-grid": "^3.0.2",
 		"@sveltejs/adapter-auto": "^3.2.1",
 		"@sveltejs/kit": "^2.0.0",
 		"@sveltejs/vite-plugin-svelte": "^3.0.0",
@@ -38,5 +38,5 @@
 		"firebase-admin": "^12.0.0",
 		"firebase-functions": "^4.8.1"
 	},
-	"homepage": "https://Raym-z.github.io/nook"
+	"homepage": "https://Raym-z.github.io"
 }

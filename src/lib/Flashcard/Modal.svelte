@@ -67,6 +67,7 @@
 		margin: 5px;
 		padding: 8px 12px;
 		border-radius: 8px;
+		border: none;
 	}
 
 	.button-container button:first-child {
