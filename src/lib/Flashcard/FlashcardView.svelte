@@ -251,7 +251,7 @@
 				<p>Title</p>
 				<p>Source</p>
 				<p>Date Created</p>
-				<p class="vertical--dots icon"></p>
+				<!-- <p class="vertical--dots icon"></p> -->
 			</div>
 			{#each filteredFlashcards as flash}
 				<div class="flashcard">

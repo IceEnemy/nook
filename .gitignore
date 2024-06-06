@@ -8,3 +8,9 @@ node_modules
 !.env.example
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+.idea
+node_modules
+/packages/*/*.js
+/packages/*/*.css
+/packages/*/*.map
+/public

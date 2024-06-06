@@ -43,38 +43,48 @@
 		});
 	}
 
-	function init() {
-		if (!firebase.apps.length) {
-			firebase.initializeApp(firebaseConfig);
-		} else {
-			firebase.app(); // if already initialized, use that one
-		}
+	async function init() {
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    } else {
+        firebase.app(); // if already initialized, use that one
+    }
 
-		var firepadRef = getExampleRef();
+    // Check if the noteId exists in Firebase
+    const noteRef = firebase.database().ref(noteId);
+    const snapshot = await noteRef.once('value');
+    if (!snapshot.exists()) {
+        // Note doesn't exist, redirect to dashboard or handle as needed
+        goto('/app/dashboard');
+        return;
+    }
 
-		var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
+    var firepadRef = getExampleRef();
 
-		var userId = uid;
+    var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
 
-		firepad = Firepad.fromCodeMirror(firepadRef, codeMirror, {
-			richTextToolbar: true,
-			richTextShortcuts: true,
-			userId: userId
-		});
+    var userId = uid;
 
-		var firepadUserList = FirepadUserList.fromDiv(
-			firepadRef.child('users'),
-			document.getElementById('userlist'),
-			userId,
-			username
-		);
+    firepad = Firepad.fromCodeMirror(firepadRef, codeMirror, {
+        richTextToolbar: true,
+        richTextShortcuts: true,
+        userId: userId
+    });
 
-		firepad.on('ready', function () {
-			if (firepad.isHistoryEmpty()) {
-				firepad.setText('Start writing!');
-			}
-		});
-	}
+    var firepadUserList = FirepadUserList.fromDiv(
+        firepadRef.child('users'),
+        document.getElementById('userlist'),
+        userId,
+        username
+    );
+
+    firepad.on('ready', function () {
+        if (firepad.isHistoryEmpty()) {
+            firepad.setText('Start writing!');
+        }
+    });
+}
+
 
 	function getExampleRef() {
 		var ref = firebase.database().ref();

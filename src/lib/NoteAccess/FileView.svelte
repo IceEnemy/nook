@@ -289,12 +289,12 @@
 			</div>
 			<label>
 				<span class="ic--round-search icon"></span>
-				<input type="text" class="searchbar" placeholder="Seach Notes" bind:value={searched} />
+				<input type="text" class="searchbar" placeholder="Search files" bind:value={searched} />
 			</label>
 		</form>
 
 		<div class="folderContainer">
-			<p>Folders</p>
+			<p id="folderSection">Folders</p>
 			<div class="folderGrid">
 				{#each filteredFolders as folder}
 					<!-- {#if (searched != '' && folder.title.toLowerCase().includes(searched.toLowerCase())) || searched === ''} -->
@@ -308,7 +308,7 @@
 			</div>
 		</div>
 		<div class="noteContainer">
-			<p>Notes</p>
+			<p id="noteSection">Notes</p>
 			<div class="noteGrid">
 				{#each filteredNotes as note}
 					<NotePreview title={note.title} link={note.noteId} on:openPopup={listenEditDetail} />
@@ -331,9 +331,7 @@
 								</label>
 							</div>
 							<label class="saveButton">
-								<button
-								on:click={() => handleAddNote(noteName, 'folder')}>Confirm</button
-								>
+								<button on:click={() => handleAddNote(noteName, 'folder')}>Confirm</button>
 							</label>
 						</form>
 					{:else if newPopup === 'note'}
@@ -360,16 +358,16 @@
 
 							<label class="saveButton">
 								<button
-								on:click={() => {
-									updateNoteStore.updateTitle(
-										editDetail,
-										newPopup === 'titleNote' ? 'note' : 'folder',
-										noteName
-									);
-									newPopup = '';
-									noteName = '';
-									location.reload();
-								}}>Confirm</button
+									on:click={() => {
+										updateNoteStore.updateTitle(
+											editDetail,
+											newPopup === 'titleNote' ? 'note' : 'folder',
+											noteName
+										);
+										newPopup = '';
+										noteName = '';
+										location.reload();
+									}}>Confirm</button
 								>
 							</label>
 						</form>
@@ -458,5 +456,9 @@
 		font-size: 1rem;
 		color: var(--text_high_contrast);
 		font-weight: 600;
+	}
+	#folderSection,
+	#noteSection {
+		margin-bottom: 10px;
 	}
 </style>
