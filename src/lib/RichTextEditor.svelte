@@ -13,21 +13,38 @@
 	export let noteId = '';
 	export let uid = '';
 	export let username = '';
-
+	let currentNoteId = '';
 	let firepad;
 	let isOpen = false;
 	let flashcardName = '';
 	let loading = false;
 
+	$: {
+		if (noteId !== currentNoteId && currentNoteId !== '') {
+			currentNoteId = noteId;
+			initNote();
+			location.reload();
+		}
+	}
+
+	async function initNote() {
+		await handleInit();
+	}
+
+	async function handleInit() {
+		currentNoteId = noteId;
+		await loadScript('https://www.gstatic.com/firebasejs/7.13.2/firebase-app.js');
+		await loadScript('https://www.gstatic.com/firebasejs/7.13.2/firebase-auth.js');
+		await loadScript('https://www.gstatic.com/firebasejs/7.13.2/firebase-database.js');
+		await loadScript('/src/lib/firepad/codemirror.js');
+		await loadScript('/src/lib/firepad/firepad.js');
+		await loadScript('/src/lib/firepad/userlist.js');
+		init();
+	}
+
 	onMount(async () => {
 		try {
-			await loadScript('https://www.gstatic.com/firebasejs/7.13.2/firebase-app.js');
-			await loadScript('https://www.gstatic.com/firebasejs/7.13.2/firebase-auth.js');
-			await loadScript('https://www.gstatic.com/firebasejs/7.13.2/firebase-database.js');
-			await loadScript('/src/lib/firepad/codemirror.js');
-			await loadScript('/src/lib/firepad/firepad.js');
-			await loadScript('/src/lib/firepad/userlist.js');
-			init();
+			await handleInit();
 		} catch (e) {
 			console.log(e);
 		}
@@ -44,47 +61,46 @@
 	}
 
 	async function init() {
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    } else {
-        firebase.app(); // if already initialized, use that one
-    }
+		if (!firebase.apps.length) {
+			firebase.initializeApp(firebaseConfig);
+		} else {
+			firebase.app(); // if already initialized, use that one
+		}
 
-    // Check if the noteId exists in Firebase
-    const noteRef = firebase.database().ref(noteId);
-    const snapshot = await noteRef.once('value');
-    if (!snapshot.exists()) {
-        // Note doesn't exist, redirect to dashboard or handle as needed
-        goto('/app/dashboard');
-        return;
-    }
+		// Check if the noteId exists in Firebase
+		const noteRef = firebase.database().ref(noteId);
+		const snapshot = await noteRef.once('value');
+		if (!snapshot.exists()) {
+			// Note doesn't exist, redirect to dashboard or handle as needed
+			goto('/app/dashboard');
+			return;
+		}
 
-    var firepadRef = getExampleRef();
+		var firepadRef = getExampleRef();
 
-    var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
+		var codeMirror = CodeMirror(document.getElementById('firepad'), { lineWrapping: true });
 
-    var userId = uid;
+		var userId = uid;
 
-    firepad = Firepad.fromCodeMirror(firepadRef, codeMirror, {
-        richTextToolbar: true,
-        richTextShortcuts: true,
-        userId: userId
-    });
+		firepad = Firepad.fromCodeMirror(firepadRef, codeMirror, {
+			richTextToolbar: true,
+			richTextShortcuts: true,
+			userId: userId
+		});
 
-    var firepadUserList = FirepadUserList.fromDiv(
-        firepadRef.child('users'),
-        document.getElementById('userlist'),
-        userId,
-        username
-    );
+		var firepadUserList = FirepadUserList.fromDiv(
+			firepadRef.child('users'),
+			document.getElementById('userlist'),
+			userId,
+			username
+		);
 
-    firepad.on('ready', function () {
-        if (firepad.isHistoryEmpty()) {
-            firepad.setText('Start writing!');
-        }
-    });
-}
-
+		firepad.on('ready', function () {
+			if (firepad.isHistoryEmpty()) {
+				firepad.setText('Start writing!');
+			}
+		});
+	}
 
 	function getExampleRef() {
 		var ref = firebase.database().ref();
@@ -98,7 +114,7 @@
 	}
 
 	function openModal() {
-		console.log('open modal')
+		console.log('open modal');
 		isOpen = true;
 	}
 

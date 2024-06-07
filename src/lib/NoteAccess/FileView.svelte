@@ -287,7 +287,7 @@
 					{/if}
 				</div>
 			</div>
-			<label>
+			<label class="searchButton">
 				<span class="ic--round-search icon"></span>
 				<input type="text" class="searchbar" placeholder="Search files" bind:value={searched} />
 			</label>
@@ -460,5 +460,8 @@
 	#folderSection,
 	#noteSection {
 		margin-bottom: 10px;
+	}
+	.searchButton {
+		margin-right: 0.5rem;
 	}
 </style>

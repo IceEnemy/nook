@@ -6,6 +6,7 @@ export const audioProgress = writable(0);
 export const audioDuration = writable(0);
 export const isLooping = writable(false);
 export const isRandom = writable(false);
+export const volume = writable(0.2); // Default volume at 20%
 
 let audioElements = {};
 
@@ -110,7 +111,7 @@ const initializeAudioElements = () => {
     songArr.forEach((_, index) => {
       if (!audioElements[index]) {
         const audio = new Audio(songArr[index].path);
-        audio.volume = 0.2;
+        audio.volume = get(volume); // Set the initial volume
         audio.addEventListener('timeupdate', () => updateProgress(index));
         audio.addEventListener('loadedmetadata', () => updateDuration(index));
         audio.addEventListener('ended', () => {
@@ -126,8 +127,15 @@ const initializeAudioElements = () => {
   }
 };
 
+// Update the volume of all audio elements
+export const setVolume = (newVolume) => {
+  volume.set(newVolume);
+  Object.values(audioElements).forEach(audio => {
+    audio.volume = newVolume;
+  });
+};
+
 // Call the function to initialize audio elements
 initializeAudioElements();
 
 export { songArr, initializeAudioElements };
-
