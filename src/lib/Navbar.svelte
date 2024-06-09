@@ -5,9 +5,10 @@
 	import { db, auth } from '$lib/firebase/firebase';
 	import { goto } from '$app/navigation';
 	import { authStore } from '$lib/store/store.js';
-	import OptionButton from '$lib/assets/OptionButton.svelte';
-	import NookLogo from '$lib/assets/NookLogo.svelte';
+	import OptionButton from './assets/OptionButton.svelte';
+	import NookLogo from './assets/NookLogo.svelte';
 	import FolderItem from '$lib/NoteAccess/FolderItem.svelte';
+	import NoteItem from '$lib/NoteAccess/NoteItem.svelte';
 	import {
 		timerState,
 		globalWorkTime,
@@ -77,6 +78,7 @@
 		: 0;
 
 	let folders = [];
+	let noteArray = [];
 
 	onMount(async () => {
 		await handleRecentNotes();
@@ -120,18 +122,17 @@
 			let folderMap = new Map();
 
 			for (const note of notes) {
-				// console.log('Note:', note);
+				console.log('Note:', note);
 				if (note.type === 'note') {
 					const noteDocRef = doc(db, 'notes', note.noteId);
 					const noteDoc = await getDoc(noteDocRef);
 					if (noteDoc.exists()) {
 						const noteData = noteDoc.data();
-						let folderName = noteData.folder || 'Uncategorized';
+						let folderName = 'Entries';
 						if (!folderMap.has(folderName)) {
 							folderMap.set(folderName, []);
 						}
 						folderMap.get(folderName).push({ ...noteData, noteId: note.noteId });
-						// console.log('Folder name:', folderName);
 					}
 				} else if (note.type === 'folder') {
 					const folderDocRef = doc(db, 'folders', note.noteId);
@@ -155,10 +156,19 @@
 
 			// Sort notes within each folder by last edited date
 			for (const [folderName, notes] of folderMap) {
-				notes.sort((a, b) => new Date(a.lastEdited) - new Date(b.lastEdited));
+				notes.sort((a, b) => new Date(b.lastEdited) - new Date(a.lastEdited));
 			}
 
-			folders = Array.from(folderMap, ([name, notes]) => ({ name, notes }));
+			// Sort folders by the most recent last edited date of their notes
+			const sortedFolders = Array.from(folderMap.entries())
+				.sort(([, notesA], [, notesB]) => {
+					const lastEditedA = notesA.length ? new Date(notesA[0].lastEdited) : new Date(0);
+					const lastEditedB = notesB.length ? new Date(notesB[0].lastEdited) : new Date(0);
+					return lastEditedB - lastEditedA;
+				})
+				.map(([name, notes]) => ({ name, notes }));
+
+			folders = sortedFolders;
 			console.log('Data loaded and arrays filled');
 		} catch (error) {
 			console.error('Error filling arrays:', error);
@@ -191,9 +201,13 @@
 		{/each}
 	</ul>
 	<ul class="navSection">
-		<h2 class="sectionTitle">Recently Updated</h2>
+		<h2 class="sectionTitle">Quick Access</h2>
 		{#each folders as folder}
 			<FolderItem {folder} />
+		{/each}
+		<div></div>
+		{#each noteArray as note}
+			<NoteItem {note} />
 		{/each}
 	</ul>
 	<div class="accountNav">

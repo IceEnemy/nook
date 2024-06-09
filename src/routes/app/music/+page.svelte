@@ -15,8 +15,11 @@
 		toggleRandom,
 		formatTime,
 		songArr,
-		initializeAudioElements
+		initializeAudioElements,
+		volume,
+		setVolume
 	} from '$lib/store/music.js';
+	import { get } from 'svelte/store';
 
 	let unsubscribe;
 
@@ -35,6 +38,28 @@
 	onDestroy(() => {
 		if (unsubscribe) unsubscribe();
 	});
+
+	let currentVolume = get(volume);
+
+	const handleVolumeChange = (event) => {
+		currentVolume = event.target.value;
+		setVolume(currentVolume);
+		updateVolumeSlider(event.target);
+	};
+
+	const updateVolumeSlider = (slider) => {
+		const value = ((slider.value - slider.min) / (slider.max - slider.min)) * 100;
+		// some broken things with this line (I removed the css part of the slider because it was hella chaotic)
+		slider.style.background = `linear-gradient(to right, var(--yellow_green) ${value}%, var(--chamoisee) ${value}%)`;
+	};
+
+	// Initial call to set the gradient
+	onMount(() => {
+		const volumeSlider = document.getElementById('volume');
+		if (volumeSlider) {
+			updateVolumeSlider(volumeSlider);
+		}
+	});
 </script>
 
 <main>
@@ -46,10 +71,9 @@
 		<div class="music">
 			<div class="thumbnails">
 				{#if $currentTrack !== null}
-					<img src={songArr[$currentTrack].thumbnail} alt="" class="thumbnailImg">
+					<img src={songArr[$currentTrack].thumbnail} alt="" class="thumbnailImg" />
 					<h2>{songArr[$currentTrack].name}</h2>
 				{/if}
-				<!-- <img src="{songArr[]}" alt="" class="thumbnailImg"> -->
 			</div>
 			<div class="musicChoice">
 				<div class="choiceHead">
@@ -59,8 +83,8 @@
 					<p>Duration</p>
 				</div>
 				{#each songArr as song, i}
-					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					<!-- svelte-ignore a11y-click-events-have-key-events -->
+					<!-- svelte-ignore a11y-no-static-element-interactions -->
 					<div class="song" on:click={() => playTrack(i)}>
 						<p>{i + 1}</p>
 						<p>{song.name}</p>
@@ -72,7 +96,6 @@
 		</div>
 
 		<div class="footer">
-			<!-- {#if $currentTrack !== null} -->
 			<div class="progressContainer">
 				<button on:click={toggleRandom} class:is-active={$isRandom}>
 					<p class="fa--random icon"></p>
@@ -95,18 +118,28 @@
 				<progress max={$audioDuration} value={$audioProgress}></progress>
 				<p>{formatTime($audioDuration)}</p>
 			</div>
-			<!-- {/if} -->
+			<div>
+				<input
+					class="volumeSlider"
+					type="range"
+					id="volume"
+					min="0"
+					max="1"
+					step="0.01"
+					bind:value={currentVolume}
+					on:input={handleVolumeChange}
+				/>
+			</div>
 		</div>
 	</div>
 </main>
 
 <style>
-	.thumbnailImg{
+	.thumbnailImg {
 		width: 250px;
 		height: 250px;
 		object-fit: cover;
 		border-radius: 5px;
-		
 	}
 
 	button {
@@ -207,6 +240,10 @@
 		height: 100vh;
 		display: flex;
 		flex-direction: column;
+	}
+
+	.thumbnails h2 {
+		text-align: center;
 	}
 
 	progress {

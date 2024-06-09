@@ -4,7 +4,7 @@
     import { slide, fade } from 'svelte/transition';
     import { cubicOut } from 'svelte/easing';
     import { flip } from 'svelte/animate';
-    import NookLogo from '$lib/assets/NookLogo.svelte'
+    import NookLogo from './assets/NookLogo.svelte'
     
 
     let username = '';
