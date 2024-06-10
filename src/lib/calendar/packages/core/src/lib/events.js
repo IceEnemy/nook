@@ -54,7 +54,7 @@ export function createEventSources(input) {
 
 export function createEventChunk(event, start, end) {
     return {
-        start: event.start > start ? event.start : start,
+        start: event.start > start ? event.start : start,       
         end: event.end < end ? event.end : end,
         event
     };

@@ -5,7 +5,7 @@ import { doc, setDoc, serverTimestamp, deleteDoc, updateDoc, arrayUnion, arrayRe
 import { get, push, ref, set, remove } from 'firebase/database';
 import { browser } from '$app/environment';
 
-const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY;
+const OPENAI_API_KEY = import.meta.env.VITE_OPENAI_API_KEY; 
 
 export const updateFlashcardStore = {
     addFlashcard: async (title, parentNoteId, text) => {
