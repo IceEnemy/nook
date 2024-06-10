@@ -117,19 +117,20 @@
 				<p>{formatTime($audioProgress)}</p>
 				<progress max={$audioDuration} value={$audioProgress}></progress>
 				<p>{formatTime($audioDuration)}</p>
+				<div>
+					<input
+						class="volumeSlider"
+						type="range"
+						id="volume"
+						min="0"
+						max="1"
+						step="0.01"
+						bind:value={currentVolume}
+						on:input={handleVolumeChange}
+					/>
+				</div>
 			</div>
-			<div>
-				<input
-					class="volumeSlider"
-					type="range"
-					id="volume"
-					min="0"
-					max="1"
-					step="0.01"
-					bind:value={currentVolume}
-					on:input={handleVolumeChange}
-				/>
-			</div>
+			
 		</div>
 	</div>
 </main>
