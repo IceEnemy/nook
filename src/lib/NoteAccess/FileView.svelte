@@ -105,22 +105,6 @@
 
 		const docRef = ref ? doc(db, 'folders', ref) : doc(db, 'users', auth.currentUser.uid);
 
-		// if(ref){
-		//     // docSnap = await getDoc(doc(db, 'folders', ref));
-		//     // console.log(docSnap.data());
-		//     unsubscribe = onSnapshot(doc(db, 'folders', ref), (doc) => {
-		//         docSnap = doc;
-		//         fillArrays();
-		//     });
-		// }
-		// else{
-		//     // docSnap = await getDoc(doc(db, 'users', auth.currentUser.uid));
-		//     unsubscribe = onSnapshot(doc(db, 'users', auth.currentUser.uid), (doc) => {
-		//         docSnap = doc;
-		//         fillArrays();
-		//     });
-		// }
-
 		unsubscribe = onSnapshot(docRef, (doc) => {
 			dataGot = false;
 			docSnap = doc;
@@ -135,25 +119,6 @@
 					dataGot = false; // Consider setting to false or handling error state
 				});
 		});
-
-		// folders = [];
-		// notes = [];
-		// const files = docSnap.data().notes;
-		// for(const file of files){
-		//     if(file.type === 'folder'){
-		//         const folderDoc = await getDoc(doc(db, 'folders', file.noteId))
-		//         folders.push({ ...folderDoc.data(), noteId: file.noteId });
-		//         console.log(folders)
-		//     }
-		//     else{
-		//         const noteDoc = await getDoc(doc(db, 'notes', file.noteId))
-		//         notes.push({ ...noteDoc.data(), noteId: file.noteId });
-		//         console.log(notes)
-		//     }
-		// }
-
-		// dataGot = true;
-		// console.log("dataGot!")
 	}
 	onDestroy(() => {
 		if (unsubscribe) return unsubscribe();

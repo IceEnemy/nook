@@ -5,6 +5,7 @@
 	import { doc, getDoc, onSnapshot } from 'firebase/firestore';
 	import { db, auth } from '$lib/firebase/firebase';
 	import { onMount, onDestroy } from 'svelte';
+	import { goto } from '$app/navigation';
 
 	$: username = $authStore.data.username;
 	$: uid = $authStore.user.uid;
@@ -19,9 +20,10 @@
 			try {
 				const notes = await getDoc(docRef);
 				if (notes.exists()) {
-					noteName = note.data().title;
+					noteName = notes.data().title;
 				} else {
 					console.log('No such document!');
+					goto('/app/dashboard');
 				}
 			} catch (error) {
 				console.error('Error getting document:', error);

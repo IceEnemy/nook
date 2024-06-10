@@ -1,9 +1,10 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence, verifyBeforeUpdateEmail, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
-import {writable} from 'svelte/store';
-import {auth, db, storage, rtdb} from '$lib/firebase/firebase.js'
+import { writable } from 'svelte/store';
+import { auth, db, storage, rtdb } from '$lib/firebase/firebase.js'
 import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
-import { doc, setDoc, serverTimestamp, deleteDoc, updateDoc, arrayUnion, arrayRemove, addDoc, collection, getDoc} from 'firebase/firestore';
+import { doc, setDoc, serverTimestamp, deleteDoc, updateDoc, arrayUnion, arrayRemove, addDoc, collection, getDoc } from 'firebase/firestore';
 import { get, push, ref, set, remove } from 'firebase/database';
+import { events } from '$lib/calendar/packages/core/src/storage/stores';
 
 
 //Store to keep track of the user's data, whenever the database is updated, update the store as well.
@@ -13,7 +14,7 @@ export const authStore = writable({
     data: {}
 })
 
-function loadingState(state){
+function loadingState(state) {
     authStore.update(store => {
         return { ...store, loading: state }
     })
@@ -28,7 +29,7 @@ export async function uploadProfilePicture(file) {
 
     console.log('Uploading file!');
     loadingState(true);
-    try{
+    try {
         const uid = auth.currentUser.uid;
 
         const fileRef = storageRef(storage, `profilePics/${uid}`);
@@ -39,11 +40,11 @@ export async function uploadProfilePicture(file) {
         const userRef = doc(db, 'users', uid);
         await setDoc(
             userRef,
-            {profilePic: photoURL},
-            {merge: true}
+            { profilePic: photoURL },
+            { merge: true }
         );
     }
-    catch{
+    catch {
         let errorMessage = 'Profile picture upload failed';
         loadingState(false);
         throw new Error(errorMessage);
@@ -58,16 +59,16 @@ export async function updateProfileData(username, DOB, phoneNumber) {
     //     return;
     // }
     loadingState(true);
-    try{
+    try {
         const uid = auth.currentUser.uid;
         const userRef = doc(db, 'users', uid);
         await setDoc(
             userRef,
-            {username, DOB, phoneNumber},
-            {merge: true}
+            { username, DOB, phoneNumber },
+            { merge: true }
         );
     }
-    catch{
+    catch {
         let errorMessage = 'Profile update failed';
         loadingState(false);
         throw new Error(errorMessage);
@@ -81,23 +82,24 @@ export const authHandlers = {
     signup: async (email, pass, username, DOB, phoneNumber = '') => {
         loadingState(true);
 
-        try{
+        try {
             const userCredential = await createUserWithEmailAndPassword(auth, email, pass);
 
             const user = auth.currentUser;
             let dataToSetToStore;
             console.log('Creating User')
             const userRef = doc(db, 'users', user.uid);
-            dataToSetToStore ={
+            dataToSetToStore = {
                 username,
-                profilePic: 'https://placebear.com/250/250',                    
+                profilePic: 'https://placebear.com/250/250',
                 email,
                 firstName: '',
                 lastName: '',
                 DOB,
                 phoneNumber,
                 accCreationDate: serverTimestamp(),
-                notes: []
+                notes: [],
+                events: []
             }
             await setDoc(
                 userRef,
@@ -106,16 +108,16 @@ export const authHandlers = {
             )
             const timerRef = doc(db, 'users/' + user.uid + '/timers');
 
-            for(let i=0; i<3; i++){
+            for (let i = 0; i < 3; i++) {
                 let timerData = {
-                    title: 'Timer ' + (i+1),
+                    title: 'Timer ' + (i + 1),
                     workTime: 1200,
                     breakTime: 300,
                     laps: 2
                 }
                 await addDoc(timerRef, timerData);
             }
-        } 
+        }
         catch (error) {
             let errorMessage = "Signup error: An unexpected error occurred.";
             if (error.code === 'auth/email-already-in-use') {
@@ -125,18 +127,18 @@ export const authHandlers = {
                 errorMessage = 'That email address is invalid!';
             }
             loadingState(false);
-            
+
             throw new Error(errorMessage);
         }
-            
+
         loadingState(false);
     },
     login: async (email, pass, rememberMe) => {
         const persistenceType = rememberMe ? browserLocalPersistence : browserSessionPersistence;
         loadingState(true);
-        try{
+        try {
             await setPersistence(auth, persistenceType);
-            await signInWithEmailAndPassword(auth,email,pass)
+            await signInWithEmailAndPassword(auth, email, pass)
         }
         catch (error) {
             console.log('Error: ', error);
@@ -151,11 +153,11 @@ export const authHandlers = {
                 errorMessage = 'The password is incorrect!';
             }
             loadingState(false);
-            
+
             throw new Error(errorMessage);
         }
         loadingState(false);
-        
+
     },
     logout: async () => {
         loadingState(true);
@@ -165,10 +167,10 @@ export const authHandlers = {
     },
     resetPassword: async (email) => {
         loadingState(true);
-        try{
+        try {
             await sendPasswordResetEmail(auth, email);
         }
-        catch{
+        catch {
             let errorMessage = 'Password reset failed';
             loadingState(false);
             throw new Error(errorMessage);
@@ -177,7 +179,7 @@ export const authHandlers = {
     },
     deleteAccount: async () => {
         loadingState(true);
-        try{
+        try {
             // console.log('1')
             const user = auth.currentUser;
             // console.log('2')
@@ -190,20 +192,20 @@ export const authHandlers = {
             await user.delete();
             // console.log('6')
         }
-        catch{
+        catch {
             let errorMessage = 'Account deletion failed';
             loadingState(false);
             throw new Error(errorMessage);
         }
         loadingState(false);
-        
+
     },
     updateEmail: async (email) => {
         loadingState(true);
-        try{
+        try {
             await verifyBeforeUpdateEmail(auth.currentUser, email);
         }
-        catch{
+        catch {
             let errorMessage = 'Email update failed';
             loadingState(false);
             throw new Error(errorMessage);
@@ -212,32 +214,32 @@ export const authHandlers = {
     },
     updatePassword: async (newPassword) => {
         loadingState(true);
-        try{
+        try {
             await updatePassword(auth.currentUser, newPassword);
         }
-        catch{
+        catch {
             let errorMessage = 'Password update failed';
             loadingState(false);
             throw new Error(errorMessage);
         }
         loadingState(false);
     },
-    reauthenticate: async(password) => {
+    reauthenticate: async (password) => {
         loadingState(true);
         const credential = EmailAuthProvider.credential(auth.currentUser.email, password);
-        try{
+        try {
             await reauthenticateWithCredential(auth.currentUser, credential);
             userReauthenticated.set(true);
             loadingState(false);
             return true;
         }
-        catch{
+        catch {
             console.log('Reauth failed');
             userReauthenticated.set(false);
             loadingState(false);
             return false;
         }
-        
+
     }
 
 }
@@ -283,7 +285,7 @@ export const passwordRequirements = {
 //     return ref;
 //   }
 
-function updateNoteFromPath(path, op){
+function updateNoteFromPath(path, op) {
     let result
     const unsubscribe = authStore.subscribe(storeValue => {
         result = storeValue.data.notes
@@ -298,20 +300,20 @@ function updateNoteFromPath(path, op){
     //     console.log(result)
     // } 
     // else{
-        for(let i = 0; i < path.length; i++){
-            const id = path[i];
-            let foundNote = curNote.find(note => note.noteId == id);
-            console.log(foundNote)
-            // if(i == path.length - 1){
-            //     op(foundNote)
-            // }
-            if(foundNote.type == 'folder'){
-                curNote = foundNote.notes;
-            }
-            else{
-                throw new Error('Invalid path');
-            }
+    for (let i = 0; i < path.length; i++) {
+        const id = path[i];
+        let foundNote = curNote.find(note => note.noteId == id);
+        console.log(foundNote)
+        // if(i == path.length - 1){
+        //     op(foundNote)
+        // }
+        if (foundNote.type == 'folder') {
+            curNote = foundNote.notes;
         }
+        else {
+            throw new Error('Invalid path');
+        }
+    }
     // }
     op(curNote)
     console.log(result)
@@ -383,7 +385,7 @@ export const updateNoteStore = {
     //                     }
     //                     note.push(dataToSetToStore)
     //                 })
-    
+
     //                 await updateDoc(userRef, {
     //                     notes: noteUpdate
     //                 })
@@ -396,20 +398,20 @@ export const updateNoteStore = {
     //         throw new Error(errorMessage);
     //     }
     //     loadingState(false);
-        
+
     // },
-    addNote: async (title, type, srcFolderId ='') => {
+    addNote: async (title, type, srcFolderId = '') => {
         const user = auth.currentUser;
-        
+
         let noteId;
         let dataToSetToStore;
         let firebaseRef
 
-        if(type == 'note'){
+        if (type == 'note') {
             const noteDB = ref(rtdb);
             const newNoteRef = push(noteDB);
             noteId = newNoteRef.key;
-            firebaseRef = doc(db,'notes', noteId);
+            firebaseRef = doc(db, 'notes', noteId);
             dataToSetToStore = {
                 parent: srcFolderId,
                 title,
@@ -426,7 +428,7 @@ export const updateNoteStore = {
                 { merge: true }
             )
         }
-        else if(type == 'folder'){
+        else if (type == 'folder') {
             firebaseRef = collection(db, 'folders');
             dataToSetToStore = {
                 parent: srcFolderId,
@@ -443,25 +445,25 @@ export const updateNoteStore = {
             noteId = folderLocation.id;
         }
 
-        
-        
+
+
         // dataToSetToStore.noteId = noteId;
         const refData = {
             noteId,
             type
         }
-        if(srcFolderId){
+        if (srcFolderId) {
             const folderRef = doc(db, 'folders', srcFolderId);
             await updateDoc(
                 folderRef,
-                {notes: arrayUnion(refData)}
+                { notes: arrayUnion(refData) }
             )
         }
-        else{
+        else {
             const userRef = doc(db, 'users', user.uid);
             await updateDoc(
-                userRef, 
-                {notes: arrayUnion(refData)}
+                userRef,
+                { notes: arrayUnion(refData) }
             )
         }
 
@@ -471,18 +473,18 @@ export const updateNoteStore = {
         const userRef = doc(db, 'users', user.uid);
         let noteRef;
         let rtdbRef;
-        if(type == 'note'){
+        if (type == 'note') {
             noteRef = doc(db, 'notes', noteId);
             rtdbRef = ref(rtdb, noteId);
         }
-        else if(type == 'folder'){
+        else if (type == 'folder') {
             noteRef = doc(db, 'folders', noteId);
             const snapshot = await getDoc(noteRef);
             const noteRefData = snapshot.data();
-            console.log(noteId ,':', noteRefData.notes)
+            console.log(noteId, ':', noteRefData.notes)
             // console.log(noteRef)
             const size = noteRefData.notes.length;
-            for(let i = 0; i < size; i++){
+            for (let i = 0; i < size; i++) {
                 await updateNoteStore.deleteNote(
                     noteRefData.notes[i].noteId,
                     noteRefData.notes[i].type,
@@ -491,43 +493,43 @@ export const updateNoteStore = {
             }
         }
         await deleteDoc(noteRef);
-        if(rtdbRef){
+        if (rtdbRef) {
             await remove(rtdbRef);
         }
-        if(srcFolderId){
+        if (srcFolderId) {
             const folderRef = doc(db, 'folders', srcFolderId);
             await updateDoc(
                 folderRef,
-                {notes: arrayRemove({noteId, type})}
+                { notes: arrayRemove({ noteId, type }) }
             )
         }
-        else{
+        else {
             await updateDoc(
                 userRef,
-                {notes: arrayRemove({noteId, type})}
+                { notes: arrayRemove({ noteId, type }) }
             )
         }
     },
     updateTitle: async (noteId, type, newTitle) => {
         let noteRef;
-        if(type == 'note'){
+        if (type == 'note') {
             noteRef = doc(db, 'notes', noteId);
         }
-        else if(type == 'folder'){
+        else if (type == 'folder') {
             noteRef = doc(db, 'folders', noteId);
         }
         await updateDoc(
             noteRef,
-            {title: newTitle}
+            { title: newTitle }
         )
-    
+
     }
 }
 
-export function formatDate(timestamp){
+export function formatDate(timestamp) {
     let date = new Date(timestamp);
     let day = date.getDate().toString().padStart(2, '0');
-    let month = (date.getMonth()+1).toString().padStart(2, '0');
+    let month = (date.getMonth() + 1).toString().padStart(2, '0');
     let year = date.getFullYear();
     return `${day}/${month}/${year}`;
 }

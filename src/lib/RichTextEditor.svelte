@@ -69,12 +69,6 @@
 
 		// Check if the noteId exists in Firebase
 		const noteRef = firebase.database().ref(noteId);
-		const snapshot = await noteRef.once('value');
-		if (!snapshot.exists()) {
-			// Note doesn't exist, redirect to dashboard or handle as needed
-			goto('/app/dashboard');
-			return;
-		}
 
 		var firepadRef = getExampleRef();
 
