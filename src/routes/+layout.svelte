@@ -81,8 +81,8 @@
 	.mainContainer {
 		height: 100%;
 		width: 100%;
-		background: var(--default_white);
-		color: var(--van_dyke);
+		background: var(--van_dyke);
+		color: var(--chamoisee);
 		position: relative;
 		align-items: center;
 		justify-content: center;

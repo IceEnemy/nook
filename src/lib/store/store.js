@@ -99,14 +99,16 @@ export const authHandlers = {
                 phoneNumber,
                 accCreationDate: serverTimestamp(),
                 notes: [],
-                events: []
+                events: [],
+                contacts: [],
+                messages: []
             }
             await setDoc(
                 userRef,
                 dataToSetToStore,
                 { merge: true }
             )
-            const timerRef = doc(db, 'users/' + user.uid + '/timers');
+            const timerRef = collection(db, 'users', user.uid, 'timers');
 
             for (let i = 0; i < 3; i++) {
                 let timerData = {
@@ -182,6 +184,20 @@ export const authHandlers = {
         try {
             // console.log('1')
             const user = auth.currentUser;
+
+            // delete all notes
+            const userRef = doc(db, 'users', user.uid);
+            const userSnapshot = await getDoc(userRef);
+            const userData = userSnapshot.data();
+            const notes = userData.notes;
+
+            for (let i = 0; i < notes.length; i++) {
+                await updateNoteStore.deleteNote(
+                    notes[i].noteId,
+                    notes[i].type
+                )
+            }
+
             // console.log('2')
             await deleteDoc(doc(db, 'users', user.uid));
             // console.log('3')
