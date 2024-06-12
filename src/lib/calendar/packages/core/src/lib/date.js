@@ -8,18 +8,22 @@ export function createDate(input = undefined) {
     return _fromLocalDate(new Date());
 }
 
+export function createNewEvent() {
+    console.log('New Event');
+}
+
 export function createDuration(input) {
     if (typeof input === 'number') {
-        input = {seconds: input};
+        input = { seconds: input };
     } else if (typeof input === 'string') {
         // Expected format hh[:mm[:ss]]
         let seconds = 0, exp = 2;
         for (let part of input.split(':', 3)) {
             seconds += parseInt(part, 10) * Math.pow(60, exp--);
         }
-        input = {seconds};
+        input = { seconds };
     } else if (input instanceof Date) {
-        input = {hours: input.getUTCHours(), minutes: input.getUTCMinutes(), seconds: input.getUTCSeconds()};
+        input = { hours: input.getUTCHours(), minutes: input.getUTCMinutes(), seconds: input.getUTCSeconds() };
     }
 
     let weeks = input.weeks || input.week || 0;

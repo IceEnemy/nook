@@ -23,7 +23,8 @@ export function createEvents(input) {
             display: event.display || 'auto',
             extendedProps: event.extendedProps || {},
             backgroundColor: event.backgroundColor || event.color,
-            textColor: event.textColor
+            textColor: event.textColor,
+            // eventId: event.eventId,
         };
 
         if (result.allDay) {

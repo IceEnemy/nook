@@ -81,7 +81,7 @@
 	let noteArray = [];
 
 	onMount(async () => {
-		await handleRecentNotes();
+		await handleRecentNotes(5);
 	});
 
 	onDestroy(() => {
@@ -90,7 +90,7 @@
 		}
 	});
 
-	async function handleRecentNotes() {
+	async function handleRecentNotes(maxRecentNotes) {
 		let user = auth.currentUser;
 		if (!user) {
 			console.log('No user is signed in.');
@@ -113,16 +113,20 @@
 				return;
 			}
 
-			await fillArrays(userData.notes);
+			await fillArrays(userData.notes, maxRecentNotes);
 		});
 	}
 
-	async function fillArrays(notes) {
+	async function fillArrays(notes, maxRecentNotes) {
 		try {
 			let folderMap = new Map();
+			let counter = 0; // Counter for limiting the number of recent notes
 
 			for (const note of notes) {
-				console.log('Note:', note);
+				// console.log('Note:', note);
+				if (counter >= maxRecentNotes) {
+					break; // Exit the loop if maxRecentNotes limit is reached
+				}
 				if (note.type === 'note') {
 					const noteDocRef = doc(db, 'notes', note.noteId);
 					const noteDoc = await getDoc(noteDocRef);
@@ -152,6 +156,7 @@
 						folderMap.set(folderData.title, folderNotes);
 					}
 				}
+				counter++; // Increment the counter for each processed note or folder
 			}
 
 			// Sort notes within each folder by last edited date

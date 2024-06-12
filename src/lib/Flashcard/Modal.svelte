@@ -77,7 +77,7 @@
 	.button-container button:last-child {
 		margin-left: 5px;
 	}
-
+	
 	#confirm {
 		background-color: var(--coyote);
 		color: var(--navbar_contrast_text);

@@ -15,8 +15,10 @@ export function createOptions(plugins) {
         allDaySlot: true,
         buttonText: {
             today: 'today',
+            addEvent: 'add event'
         },
-        customButtons: {},
+        customButtons: {
+        },
         date: new Date(),
         datesSet: undefined,
         dayHeaderFormat: {
@@ -28,7 +30,7 @@ export function createOptions(plugins) {
             dateStyle: 'long'
         },
         displayEventEnd: true,
-        duration: {weeks: 1},
+        duration: { weeks: 1 },
         events: [],
         eventAllUpdated: undefined,
         eventBackgroundColor: undefined,

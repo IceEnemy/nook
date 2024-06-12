@@ -26,7 +26,7 @@ const songArr = [
     thumbnail: "../src/lib/assets/deepImg.png"
   },
   {
-    name: "LoFi Hip-Hop - Coffee and Tapes",
+    name: "LoFi Hip-Hop - Coffee",
     author: "LFC Records",
     duration: "2:04",
     path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
