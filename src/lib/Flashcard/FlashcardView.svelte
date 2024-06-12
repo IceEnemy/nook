@@ -235,7 +235,7 @@
 					{/if}
 				</div>
 			</div>
-			<label>
+			<label class="searchButton">
 				<span class="ic--round-search icon"></span>
 				<input
 					type="text"
@@ -341,7 +341,7 @@
 	}
 	.flashcardHeader {
 		display: grid;
-		grid-template-columns: 32vw 1fr 1fr 50px;
+		grid-template-columns: 32vw 1fr 0.4fr 50px;
 		gap: 10px;
 		padding: 10px;
 		align-items: center;
@@ -378,5 +378,8 @@
 		font-size: 1rem;
 		color: var(--text_high_contrast);
 		font-weight: 600;
+	}
+	.searchButton {
+		margin-right: 0.5rem;
 	}
 </style>

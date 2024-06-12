@@ -9,7 +9,7 @@
 		isOpen = !isOpen;
 	}
 
-	$: console.log('Folder:', folder);
+	// $: console.log('Folder:', folder);
 </script>
 
 <div class="folder">

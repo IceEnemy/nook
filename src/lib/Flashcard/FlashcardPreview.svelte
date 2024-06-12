@@ -71,9 +71,16 @@
 </button>
 
 <style>
+	.flashcardButton p {
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		flex-grow: 1; 
+	}
+
 	.flashcardButton {
 		display: grid;
-		grid-template-columns: 32vw 1fr 1fr 50px;
+		grid-template-columns: 32vw 1fr 0.4fr 50px;
 		gap: 10px;
 		padding: 10px;
 		align-items: center;

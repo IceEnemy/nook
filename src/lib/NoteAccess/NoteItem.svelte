@@ -12,7 +12,7 @@
 		// location.reload();
 	}
 
-	$: console.log('NoteItem:', note);
+	// $: console.log('NoteItem:', note);
 </script>
 
 <button class="note-button" on:click={handleClick}>
