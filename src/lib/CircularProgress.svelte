@@ -51,6 +51,7 @@
     align-self: center;
     justify-content: center;
     align-items: center;
+    color: var(--darker_van_dyke);
 }
 h1 {
     font-size: 4rem;

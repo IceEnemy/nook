@@ -41,8 +41,8 @@
 			console.log('Checking token for path:', currentPath);
 
 			if (!user && !nonAuthRoutes.includes(currentPath)) {
-				// console.log('User not logged in, redirecting to /auth/access');
-				// goto('/auth/access');
+				console.log('User not logged in, redirecting to /auth/access');
+				goto('/auth/access');
 			} else if (user && (currentPath === '/auth/access' || currentPath === '/')) {
 				console.log('User logged in, redirecting to /app/dashboard');
 				goto('/app/dashboard');

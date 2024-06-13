@@ -166,7 +166,7 @@
 
 <div class="timerBody">
     <input type="text" class="timerName" bind:value={name} bind:this={inputElement} style="width: {$inputWidth}" on:input={adjustInputWidth} on:blur={handleBlur} on:keydown={handleKeyDown}>
-    <h2>First Lap</h2>
+    <h2>Laps</h2>
     <div class="lapsContainer">
         <button class="lapButton" on:click={() => { handleLaps('minus') }}>-</button>
         <div class="laps" style="gap: calc(30px - 5px * ({lapAmount} - 2))">
@@ -231,6 +231,7 @@
     h2, h3 {
         align-self: center;
         justify-self: center;
+        color: var(--darker_van_dyke);
     }
 
     .timeInputs {

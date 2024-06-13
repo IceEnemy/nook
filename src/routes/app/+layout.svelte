@@ -26,6 +26,7 @@
 		if (unsubscribe) unsubscribe();
 	});
 
+	$: uid = $authStore.user?.uid || 'Loading..';
 	$: username = $authStore.data?.username || 'Loading..';
 	$: profilePic = $authStore.data?.profilePic || 'https://via.placeholder.com/150';
 	$: phoneNumber = $authStore.data?.phoneNumber || 'Add Phone Number';
@@ -275,7 +276,7 @@
 										on:change={handleFileChange}
 									/>
 									<div>
-										<p class="inputTitle">{username}</p>
+										<p class="inputTitle">User ID: {uid}</p>
 										<span>{email}</span>
 									</div>
 								</div>

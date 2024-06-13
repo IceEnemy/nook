@@ -1,57 +1,81 @@
 <script>
-    export let id;
+    import { onMount } from 'svelte';
+    import { doc, getDoc } from 'firebase/firestore';
+    import { db } from '$lib/firebase/firebase.js';
+    import { authHandlers } from '$lib/store/store.js';
 
-    const name = "Jeff";
-    const pfp = 'https://www.placebear.com/250/250'
+    export let uid;
+
+    let user = {};
+
+    async function fetchUser() {
+        const userRef = doc(db, 'users', uid);
+        const userSnap = await getDoc(userRef);
+        user = userSnap.data();
+    }
+
+    onMount(async () => {
+        await fetchUser();
+    });
+
+    $: username = user?.username ?? 'Loading...';
+    $: profilePic = user?.profilePic ?? 'https://via.placeholder.com/150';
+
+    async function handleAcceptance(accepted) {
+        try {
+            await authHandlers.handleFriendRequest(uid, accepted);
+        } catch (e) {
+            console.log(e);
+        }
+    }
 </script>
 
 <div class="contactContainer">
-    <img src={pfp} alt="Profile Picture" class = "imgContainer">
+    <img src={profilePic} alt="Profile Picture" class="imgContainer">
     <div class="contactText">
-        <h2>{name}</h2>
+        <h2>{username}</h2>
         <div class="choice">
             <span>Wants to be friends!</span>
             <div class="choiceButtons">
-                <button class="acceptButton"><span class="ion--checkmark-outline icon"></span></button>
-                <button class="denyButton"><span class="entypo--cross icon"></span></button>
+                <button on:click={() => handleAcceptance(true)} class="acceptButton"><span class="ion--checkmark-outline icon"></span></button>
+                <button on:click={() => handleAcceptance(false)} class="denyButton"><span class="entypo--cross icon"></span></button>
             </div>
         </div>
     </div>
-    
 </div>
 
 <style>
-    .acceptButton:hover{
+    .acceptButton:hover {
         color: var(--yellow_green);
     }
-    .denyButton:hover{
+    .denyButton:hover {
         color: var(--imperial_red);
     }
-    .choiceButtons{
+    .choiceButtons {
         gap: 5px;
     }
-    .choiceButtons button{
+    .choiceButtons button {
         background-color: transparent;
         border: none;
         cursor: pointer;
     }
-    .choice{
+    .choice {
         width: 100%;
         display: flex;
         justify-content: space-between;
         align-items: center;
     }
-    .imgContainer{
+    .imgContainer {
         width: 50px;
         height: 50px;
     }
-    .contactText{
+    .contactText {
         display: flex;
         flex-direction: column;
         width: 100%;
         gap: 5px;
     }
-    .contactContainer{
+    .contactContainer {
         width: 100%;
         padding: 1rem;
         display: flex;
@@ -60,7 +84,7 @@
         gap: 1rem;
         border-bottom: solid 1px;
     }
-    h2{
+    h2 {
         font-size: 1rem;
         color: var(--van_dyke);
     }

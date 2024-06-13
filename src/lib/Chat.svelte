@@ -1,8 +1,78 @@
 <script>
+    import { onMount, onDestroy, beforeUpdate } from 'svelte';
+    import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+    import { db } from '$lib/firebase/firebase.js';
+    import { authStore } from '$lib/store/store.js';
+    import { authHandlers } from '$lib/store/store.js';
+    import { get } from 'svelte/store';
+
     export let id;
-    
-    const name = "Jeff";
-    const pfp = 'https://www.placebear.com/250/250'
+
+    let uid;
+    let otherUser = {};
+    let chatArr = [];
+    let message = '';
+    let unsubscribeChat;
+
+    onMount(() => {
+        const user = get(authStore).user;
+        if (user) {
+            uid = user.uid;
+        }
+    });
+
+    beforeUpdate(async () => {
+        if (id) {
+            await fetchOtherUser();
+            subscribeToChat();
+        }
+    });
+
+    async function fetchOtherUser() {
+        if (!id) return;
+        
+        const chatRef = doc(db, 'chats', id);
+        const chatSnap = await getDoc(chatRef);
+        const otherUid = chatSnap.data()?.users.find(user => user !== uid);
+        if (otherUid) {
+            const otherUserRef = doc(db, 'users', otherUid);
+            const otherUserSnap = await getDoc(otherUserRef);
+            otherUser = otherUserSnap.data();
+        }
+    }
+
+    function subscribeToChat() {
+        if (unsubscribeChat) {
+            unsubscribeChat();
+        }
+        if (!id) return;
+        
+        const chatRef = doc(db, 'chats', id);
+        unsubscribeChat = onSnapshot(chatRef, (chatSnap) => {
+            if (chatSnap.exists()) {
+                chatArr = chatSnap.data().messages;
+            }
+        });
+    }
+
+    $: name = otherUser?.username ?? 'Chat with your friend!';
+    $: pfp = otherUser?.profilePic ?? 'https://via.placeholder.com/150';
+
+    async function handleSendMessage() {
+        try {
+            await authHandlers.sendMessage(id, message);
+            message = '';
+        } catch (e) {
+            console.log(e);
+            message = '';
+        }
+    }
+
+    onDestroy(() => {
+        if (unsubscribeChat) {
+            unsubscribeChat();
+        }
+    });
 </script>
 
 <div class="chatContainer">
@@ -11,15 +81,18 @@
         <h1>{name}</h1>
     </div>
 
-
     <div class="chatContent">
-
+        {#each chatArr as chat}
+            <div class={chat.sender == uid ? "myChat" : "otherChat"}>
+                <p>{chat.message}</p>
+            </div>
+        {/each}
     </div>
 
     <div class="chatFooter">
-        <form>
+        <form on:submit|preventDefault={handleSendMessage}>
             <label>
-                <input type="text" placeholder="Type a message">
+                <input type="text" placeholder="Type a message" bind:value={message}>
             </label>
             <button><span class="majesticons--send icon"></span></button>
         </form>
@@ -27,38 +100,58 @@
 </div>
 
 <style>
-    h1{
+    .myChat, .otherChat {
+        width: 350px;
+        border-radius: 10px;
+        padding: 0.5rem;
+        word-break: break-word;
+        overflow-wrap: break-word;
+    }
+    .myChat {
+        background-color: var(--coyote);
+        color: var(--default_white);
+        align-self: flex-end;
+    }
+    .otherChat {
+        background-color: var(--default_white);
+        color: var(--darker_van_dyke);
+    }
+    h1 {
         color: var(--default_white);
     }
-    .imgContainer{
+    .imgContainer {
         width: 50px;
         height: 50px;
     }
-    .chatFooter form{
+    .chatFooter form {
         width: 90%;
         height: 2rem;
         display: flex;
         flex-direction: row;
         justify-content: space-between;
     }
-    .chatFooter button{
+    .chatFooter button {
         background-color: transparent;
         border: none;
         cursor: pointer;
         display: flex;
         align-items: center;
     }
-    .chatFooter input{
-        /* width: 80%; */
+    .chatFooter input {
         padding: 0.5rem 0.5rem 0.5rem 1rem;
         border-radius: 100px;
     }
-    .chatFooter label{
+    .chatFooter label {
         width: 95%;
         border-radius: 100px;
     }
-    .chatContent{
+    .chatContent {
         flex-grow: 1;
+        padding: 3rem;
+        overflow-y: scroll;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
     }
     .chatHeader {
         background-color: var(--darker_van_dyke);
@@ -80,7 +173,7 @@
         justify-content: center;
     }
     .chatContainer {
-        background: var(--coyote);
+        background: var(--chamoisee);
         height: 100%;
         width: 100%;
         display: flex;

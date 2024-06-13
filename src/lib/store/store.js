@@ -1,7 +1,7 @@
 import { createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, setPersistence, browserLocalPersistence, browserSessionPersistence, verifyBeforeUpdateEmail, reauthenticateWithCredential, EmailAuthProvider, updatePassword } from 'firebase/auth';
 import { writable } from 'svelte/store';
 import { auth, db, storage, rtdb } from '$lib/firebase/firebase.js'
-import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { ref as storageRef, uploadBytes, getDownloadURL, deleteObject, getMetadata } from 'firebase/storage';
 import { doc, setDoc, serverTimestamp, deleteDoc, updateDoc, arrayUnion, arrayRemove, addDoc, collection, getDoc } from 'firebase/firestore';
 import { get, push, ref, set, remove } from 'firebase/database';
 import { events } from '$lib/calendar/packages/core/src/storage/stores';
@@ -101,7 +101,8 @@ export const authHandlers = {
                 notes: [],
                 events: [],
                 contacts: [],
-                messages: []
+                friendRequest: [],
+                friends : []
             }
             await setDoc(
                 userRef,
@@ -201,9 +202,15 @@ export const authHandlers = {
             // console.log('2')
             await deleteDoc(doc(db, 'users', user.uid));
             // console.log('3')
-            const fileRef = storageRef(storage, `profilePics/${user.uid}`);
-            // console.log('4')
-            await deleteObject(fileRef);
+            try {
+                await getMetadata(fileRef);
+                await deleteObject(fileRef);
+            } catch (error) {
+                if (error.code !== 'storage/object-not-found') {
+                    throw error;
+                }
+                // If the file does not exist, it's safe to ignore this error
+            }
             // console.log('5')
             await user.delete();
             // console.log('6')
@@ -256,8 +263,123 @@ export const authHandlers = {
             return false;
         }
 
-    }
+    },
+    sendFriendRequest: async (uid) => {
+        const sender = auth.currentUser.uid;
+        const receiver = uid;
 
+        const receiverRef = doc(db, 'users', receiver);
+
+        if(sender == receiver){
+            throw new Error('Cannot send friend request to self');
+        }
+
+        const receiverSnapshot = await getDoc(receiverRef);
+        const receiverData = receiverSnapshot.data();
+
+        if(receiverData.friendRequest != null && receiverData.friendRequest.includes(sender)){
+            throw new Error('Friend request already sent');
+        }
+
+        if(receiverData.friends != null && receiverData.friends.includes(sender)){
+            throw new Error('Already friends');
+        }
+
+        await updateDoc(
+            receiverRef,
+            { friendRequest: arrayUnion(sender) }
+        )
+    },
+    handleFriendRequest : async (uid, accept) => {
+
+        const receiver = auth.currentUser.uid;
+        const receiverRef = doc(db, 'users', receiver);
+        if(accept){
+            
+            const sender = uid;
+
+            const chatRef = collection(db, 'chats');
+
+            const chatData = {
+                users: [receiver, sender],
+                messages: []
+            }
+
+            const chatLocation = await addDoc(chatRef, chatData);
+
+            const contactInfoforReceiver = {
+                chatId: chatLocation.id,
+                uid: sender,
+                lastMessage: '',
+                timestamp: null
+            }
+
+            const contactInfoforSender = {
+                chatId: chatLocation.id,
+                uid: receiver,
+                lastMessage: '',
+                timestamp: null
+            }
+
+            
+            const senderRef = doc(db, 'users', sender);
+
+            await updateDoc(
+                receiverRef,
+                { contacts: arrayUnion(contactInfoforReceiver), friends: arrayUnion(sender) }
+            )
+
+            await updateDoc(
+                senderRef,
+                { contacts: arrayUnion(contactInfoforSender), friends: arrayUnion(receiver)}
+            )
+        }
+        await updateDoc(
+            receiverRef,
+            { friendRequest: arrayRemove(uid) }
+        )
+    },
+    sendMessage: async (chatId, message) => {
+        const chatRef = doc(db, 'chats', chatId);
+        const chatSnapshot = await getDoc(chatRef);
+
+        const messageInfo = {
+            sender: auth.currentUser.uid,
+            message: message,
+            timestamp: Date.now()
+        }
+
+        await updateDoc(
+            chatRef,
+            { messages: arrayUnion(messageInfo) }
+        )
+
+        const chatData = chatSnapshot.data();
+        const users = chatData.users;
+
+        for (const user of users) {
+            const userRef = doc(db, 'users', user);
+            const userSnapshot = await getDoc(userRef);
+            const userData = userSnapshot.data();
+    
+            const contactToUpdate = userData.contacts.find(contact => contact.chatId === chatId);
+            if (contactToUpdate) {
+                await updateDoc(userRef, {
+                    contacts: arrayRemove(contactToUpdate)
+                });
+    
+                const updatedContact = {
+                    ...contactToUpdate,
+                    lastMessage: message,
+                    timestamp: messageInfo.timestamp
+                };
+    
+                await updateDoc(userRef, {
+                    contacts: arrayUnion(updatedContact)
+                });
+            }
+        }
+    }
 }
 
 export const passwordRequirements = {

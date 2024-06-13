@@ -43,7 +43,7 @@
 
 	const navOption1 = [
 		{ name: 'Dashboard', icon: 'material-symbols-light--dashboard-outline' },
-		{ name: 'Notifications', icon: 'material-symbols--inbox' },
+		// { name: 'Notifications', icon: 'material-symbols--inbox' },
 		{ name: 'Calendar', icon: 'mdi--calendar' },
 		{ name: 'Contacts', icon: 'lucide--contact-round' }
 	];

@@ -1,32 +1,58 @@
 <script>
-    // export let id;
+    import { onMount } from 'svelte';
+    import { doc, getDoc } from 'firebase/firestore';
+    import { db } from '$lib/firebase/firebase.js';
 
-    const name = "Jeff";
-    const pfp = 'https://www.placebear.com/250/250'
-    const lastMessage = "Hey, how are you doing?"
+    export let uid;
+    export let id;
+    export let chosen = false;
+    export let lastMessage = 'No messages yet';
+    export let onClick; // New prop for the click handler
+
+    let user = {};
+
+    async function fetchUser() {
+        const userRef = doc(db, 'users', uid);
+        const userSnap = await getDoc(userRef);
+        user = userSnap.data();
+    }
+
+    onMount(async () => {
+        await fetchUser();
+    });
+
+    $: username = user?.username ?? 'Loading...';
+    $: profilePic = user?.profilePic ?? 'https://via.placeholder.com/150';
 </script>
 
-<div class="contactContainer">
-    <!-- svelte-ignore a11y-img-redundant-alt -->
-    <img src={pfp} alt="Profile Picture" class = "imgContainer">
+<div class="contactContainer {chosen ? "chosen" : ""}" on:click={() => onClick(id)}>
+    <img src={profilePic} alt="Profile Picture" class="imgContainer">
     <div class="contactText">
-        <h2>{name}</h2>
+        <h2>{username}</h2>
         <p>{lastMessage}</p>
     </div>
-    
 </div>
 
 <style>
-    .imgContainer{
+    .imgContainer {
         width: 50px;
         height: 50px;
     }
-    .contactText{
+    .contactText {
         display: flex;
         flex-direction: column;
         gap: 5px;
+        width: 200px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
     }
-    .contactContainer{
+    .contactText p {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .contactContainer {
         width: 100%;
         padding: 1rem;
         display: flex;
@@ -34,8 +60,17 @@
         align-items: center;
         gap: 1rem;
         border-bottom: solid 1px;
+        background-color: var(--linen);
+        cursor: pointer;
     }
-    h2{
+    .contactContainer:hover {
+        background-color: var(--dim_linen);
+    }
+    .chosen {
+        background-color: var(--dim_linen);
+        cursor: default;
+    }
+    h2 {
         font-size: 1rem;
         color: var(--van_dyke);
     }
