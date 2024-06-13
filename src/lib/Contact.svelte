@@ -1,5 +1,5 @@
 <script>
-    export let id;
+    // export let id;
 
     const name = "Jeff";
     const pfp = 'https://www.placebear.com/250/250'
@@ -7,6 +7,7 @@
 </script>
 
 <div class="contactContainer">
+    <!-- svelte-ignore a11y-img-redundant-alt -->
     <img src={pfp} alt="Profile Picture" class = "imgContainer">
     <div class="contactText">
         <h2>{name}</h2>

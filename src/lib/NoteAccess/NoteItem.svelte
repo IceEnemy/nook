@@ -17,10 +17,16 @@
 
 <button class="note-button" on:click={handleClick}>
 	<span class="mingcute--file-fill icon2"></span>
-	{note.title ? note.title : 'Untitled'}
+	<p>{note.title ? note.title : 'Untitled'}</p>
 </button>
 
 <style>
+	.note-button p {
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		flex-grow: 1;
+	}
 	.note-button {
 		/* display: block; */
 		width: 100%;
@@ -38,5 +44,6 @@
 		width: 1em;
 		height: 1em;
 		margin-right: 0.5rem;
+		min-width: 1em;
 	}
 </style>
