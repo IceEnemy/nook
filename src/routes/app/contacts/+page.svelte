@@ -1,33 +1,47 @@
 <script>
     import Contact from '$lib/Contact.svelte';
+    import FriendRequest from '$lib/FriendRequest.svelte';
+    import Chat from '$lib/Chat.svelte';
 
     let filter = ''
 </script>
 
-<div class="contactsList">
-    <div class="msgHeader">
-        <h1>Contacts</h1>
-        <label class="searchContact">
-            <span class="ic--round-search icon"></span>
-            <input type="text" class="search" placeholder="Search contact" bind:value={filter}>
-        </label>
-    </div>
-    
-    
-    
-    <div class="msgs">
-        <Contact/>
-        <Contact/>
-        <Contact/>
-        <Contact/>
-        <Contact/>
+<div class="wholeContacts">
+    <div class="contactsList">
+        <div class="msgHeader">
+            <h1>Contacts</h1>
+            <label class="searchContact">
+                <span class="ic--round-search icon"></span>
+                <input type="text" class="search" placeholder="Search contact" bind:value={filter}>
+            </label>
+        </div>
+        
+        
+        
+        <div class="msgs">
+            <Contact/>
+            <Contact/>
+            <Contact/>
+            <Contact/>
+            <Contact/>
+            <FriendRequest/>
+        </div>
         
     </div>
-    
+    <Chat/>
 </div>
 
 
+
+
 <style>
+    .wholeContacts{
+        width: 100%;
+        height: 100%;
+        display: flex;
+        /* gap: 1rem; */
+    }
+
     .msgHeader{
         width: 100%;
         height: 15%;
@@ -57,7 +71,7 @@
         background-color: var(--default_white);
     }
     .contactsList{
-        width: 30%;
+        flex: 0 0 25%;
         height: 100%;
         background-color: var(--linen);
         /* padding: 2rem; */
