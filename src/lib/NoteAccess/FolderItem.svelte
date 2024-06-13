@@ -17,7 +17,7 @@
 	<!-- svelte-ignore a11y-no-static-element-interactions -->
 	<div class="folder-header" on:click={toggle}>
 		<span class="material-symbols--folder icon2"></span>
-		{folder.name}
+		<p>{folder.name}</p>
 	</div>
 	{#if isOpen}
 		<div class="folder-content">
@@ -29,6 +29,13 @@
 </div>
 
 <style>
+	.folder-header p {
+		overflow: hidden;
+		white-space: nowrap;
+		text-overflow: ellipsis;
+		flex-grow: 1;
+	}
+
 	.icon2 {
 		width: 1em;
 		height: 1em;
