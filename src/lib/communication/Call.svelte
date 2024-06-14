@@ -145,6 +145,7 @@
 			<!-- svelte-ignore a11y-media-has-caption -->
 			<video bind:this={videoEl} class="video" autoplay></video>
 		</div>
+
 		{#if !isCallActive}
 			<!-- Render person icon when call is not active -->
 			<div class="giant-icon">
@@ -153,6 +154,7 @@
 			</div>
 		{/if}
 	</div>
+
 	<div class="task-bar">
 		{#if isCallActive}
 			{#if !isVideoEnabled}
@@ -215,14 +217,24 @@
 	}
 
 	.container {
-		position: relative; /* Ensure the container is positioned */
 		display: flex;
 		flex-direction: column;
-		justify-content: flex-start;
-		align-items: center;
-		min-height: 100vh; /* Ensure the container takes at least the full height of the viewport */
-		overflow: hidden; /* Hide any overflow */
+		justify-content: center; /* Center vertically */
+		align-items: center; /* Center horizontally */
+		min-height: 100vh; /* Ensure full viewport height */
 		background-color: var(--chamoisee);
+		overflow: hidden;
+	}
+
+	.giant-icon {
+		font-size: 10rem;
+		color: var(--light_orange);
+		text-align: center; /* Center the icon and text horizontally */
+	}
+
+	.username {
+		font-size: 2rem;
+		margin-top: 1rem; /* Adjust spacing between giant-icon and username */
 	}
 
 	.video-container {
@@ -321,20 +333,18 @@
 
 	.giant-icon {
 		position: absolute;
-		font-size: 10rem;
-		color: var(--light_orange);
 		display: flex;
-		justify-content: column; /* Center icon horizontally */
-		align-items: center; /* Center icon vertically */
-		height: calc(100vh - 90px); /* Adjust height to fit the screen minus header */
-		right: 39%;
+		flex-direction: column;
+		justify-content: center; /* Center vertically */
+		align-items: center; /* Center horizontally */
+		font-size: 5rem; /* Adjust icon size as needed */
+		color: var(--light_orange);
+		margin-top: auto; /* Push to the top of the remaining space */
 	}
+
 	.username {
-		position: absolute;
 		font-size: 2rem;
-		bottom: 25%;
 		text-align: center;
-		right: 22%;
-		/* left: 50%; */
+		margin-top: 20px; /* Adjust spacing between icon and username */
 	}
 </style>
