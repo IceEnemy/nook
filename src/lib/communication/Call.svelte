@@ -4,29 +4,37 @@
 	import { onAuthStateChanged } from 'firebase/auth';
 	import { auth } from '$lib/firebase/firebase';
 	import { writable } from 'svelte/store';
-
-	$: userId = auth.currentUser.uid;
+	import { doc, getDoc, onSnapshot } from 'firebase/firestore';
+	import { db } from '$lib/firebase/firebase.js';
 
 	export let targetId;
 
-	let peer;
 	$: codeId = targetId;
-	let videocurrent;
-	let videoEl;
+
+	let peer;
+	let userId = auth.currentUser.uid;
 	let youId = '';
 	let incomingCall = null;
 	let isReceivingCall = false;
+	let isCallActive = false; // Track if a call is currently active
+	let dataGot = false;
+	let username = '';
 
-	export let onAcceptCall;
-	export let onDeclineCall;
+	// State variables for video and audio control
+	let isVideoEnabled = true;
+	let isAudioEnabled = true;
+	let videocurrent;
+	let videoEl;
 
-	onMount(() => {
-		peer = new Peer(userId);
+	onMount(async () => {
+		peer = await new Peer(userId);
 
 		peer.on('open', (id) => {
 			youId = id;
 			console.log('Your peer ID:', id);
+			dataGot = true;
 		});
+		username = await getUsername(userId);
 
 		peer.on('error', (err) => {
 			console.error(err);
@@ -44,6 +52,7 @@
 		peer.on('call', (call) => {
 			incomingCall = call;
 			isReceivingCall = true;
+			isCallActive = true; // Set call active when receiving call
 		});
 	});
 
@@ -52,6 +61,11 @@
 		videoEl.play();
 	};
 
+	async function getUsername(uid) {
+		const userRef = doc(db, 'users', targetId);
+		const userSnap = await getDoc(userRef);
+		return userSnap.data().username;
+	}
 	const handleCall = async () => {
 		if (!codeId) {
 			console.error('Please enter a peer ID to call.');
@@ -65,7 +79,9 @@
 			call.on('stream', renderYouWebcam);
 			call.on('close', () => {
 				videocurrent.srcObject = null;
+				isCallActive = false; // Reset call active status
 			});
+			isCallActive = true; // Set call active when initiating call
 		} catch (err) {
 			console.error('Failed to make a call', err);
 		}
@@ -79,7 +95,7 @@
 			videocurrent.srcObject = stream;
 			videocurrent.play();
 			isReceivingCall = false;
-			onAcceptCall(); // Call the parent component's function to handle accepted call
+			isCallActive = true; // Set call active when accepting call
 		} catch (err) {
 			console.error('Failed to accept the call', err);
 		}
@@ -88,24 +104,237 @@
 	const declineCall = () => {
 		incomingCall = null;
 		isReceivingCall = false;
-		onDeclineCall(); // Call the parent component's function to handle declined call
+		isCallActive = false; // Reset call active status
+	};
+
+	const endCall = () => {
+		if (incomingCall) {
+			// incomingCall.close();
+			isReceivingCall = false;
+			isCallActive = false; // Reset call active status
+		}
+		location.reload(); // Reload the page to reset the connection
+	};
+
+	// Toggle video stream
+	const toggleVideo = () => {
+		isVideoEnabled = !isVideoEnabled;
+		const tracks = videocurrent.srcObject.getVideoTracks();
+		tracks.forEach((track) => {
+			track.enabled = isVideoEnabled;
+		});
+	};
+
+	// Toggle audio stream
+	const toggleAudio = () => {
+		isAudioEnabled = !isAudioEnabled;
+		const tracks = videocurrent.srcObject.getAudioTracks();
+		tracks.forEach((track) => {
+			track.enabled = isAudioEnabled;
+		});
 	};
 </script>
 
-Your ID: {youId}
-<div>
-	<button on:click={handleCall} disabled={!codeId}>Call</button>
-</div>
-
-{#if isReceivingCall}
-	<div class="incoming-call">
-		<p>Incoming call...</p>
-		<button on:click={acceptCall}>Accept</button>
-		<button on:click={declineCall}>Decline</button>
+<body>
+	<div class="header"></div>
+	<div class="container">
+		<!-- Render video elements when call is active -->
+		<div class="video-container">
+			<!-- svelte-ignore a11y-media-has-caption -->
+			<video bind:this={videocurrent} class="video" autoplay></video>
+			<!-- svelte-ignore a11y-media-has-caption -->
+			<video bind:this={videoEl} class="video" autoplay></video>
+		</div>
+		{#if !isCallActive}
+			<!-- Render person icon when call is not active -->
+			<div class="giant-icon">
+				<span class="mdi material-symbols--person"></span>
+				<p class="username">{username}</p>
+			</div>
+		{/if}
 	</div>
-{/if}
+	<div class="task-bar">
+		{#if isCallActive}
+			{#if !isVideoEnabled}
+				<button on:click={toggleVideo} class="video-button">
+					<span class="mdi mdi--video-off icon"></span>
+				</button>
+			{:else}
+				<button on:click={toggleVideo} class="video-button">
+					<span class="mdi mdi--video icon"></span>
+				</button>
+			{/if}
 
-<!-- svelte-ignore a11y-media-has-caption -->
-<video bind:this={videocurrent} width="400" height="400" autoplay></video>
-<!-- svelte-ignore a11y-media-has-caption -->
-<video bind:this={videoEl} width="400" height="400" autoplay></video>
+			{#if !isAudioEnabled}
+				<button on:click={toggleAudio} class="audio-button">
+					<span class="mdi mdi--microphone-off icon"></span>
+				</button>
+			{:else}
+				<button on:click={toggleAudio} class="audio-button">
+					<span class="mdi mdi--microphone icon"></span>
+				</button>
+			{/if}
+			<div class="end-call">
+				<button on:click={endCall}>
+					<span class="material-symbols--call icon"></span>
+				</button>
+			</div>
+		{:else}
+			<button class="start-button" on:click={handleCall} disabled={!dataGot || !codeId}>
+				<span class="material-symbols--call icon"></span>
+				<p>Start a call</p>
+			</button>
+		{/if}
+	</div>
+
+	{#if isReceivingCall}
+		<div class="incoming-call">
+			<p>Incoming call...</p>
+			<button on:click={acceptCall}>Accept</button>
+			<button on:click={declineCall}>Decline</button>
+		</div>
+	{/if}
+</body>
+
+<style>
+	body {
+		margin: 0; /* Remove default margin */
+		padding: 0; /* Remove default padding */
+		overflow: hidden; /* Prevent scrolling */
+	}
+
+	.header {
+		position: absolute;
+		top: 0;
+		width: 100%;
+		background-color: var(--darker_van_dyke);
+		height: 90px;
+		padding: 1rem;
+		gap: 10px;
+		z-index: 10; /* Ensure header stays above other content */
+	}
+
+	.container {
+		position: relative; /* Ensure the container is positioned */
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		align-items: center;
+		min-height: 100vh; /* Ensure the container takes at least the full height of the viewport */
+		overflow: hidden; /* Hide any overflow */
+		background-color: var(--chamoisee);
+	}
+
+	.video-container {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		flex: 1;
+		width: 100%; /* Ensure full width */
+		max-height: calc(100vh - 90px); /* Limit the height to viewport height minus header height */
+		overflow: hidden;
+	}
+
+	.video {
+		width: 45%;
+		/* border: 1px solid #ccc; */
+		border-radius: 8px;
+		margin: 10px;
+	}
+
+	.incoming-call {
+		position: fixed;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		background-color: var(--light_orange);
+		padding: 1rem;
+		border-radius: 0.5rem;
+		box-shadow: 0 0 1rem rgba(0, 0, 0, 0.1);
+		z-index: 200; /* Ensure call notification is above other content */
+	}
+
+	.incoming-call button {
+		margin: 0.5rem;
+	}
+
+	.task-bar {
+		position: absolute;
+		bottom: 10%; /* Adjust the distance from the bottom as needed */
+		left: 50%;
+		transform: translateX(-50%);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 1rem;
+		background-color: var(--darker_van_dyke);
+		border-radius: 16px;
+		padding: 10px;
+		z-index: 100; /* Ensure it is above other content */
+		width: 90%; /* Adjust the width to fit your design */
+		max-width: 400px; /* Set a maximum width to prevent it from becoming too wide */
+		box-shadow: 0 0 10px rgba(0, 0, 0, 0.2); /* Add a subtle shadow for visual effect */
+	}
+
+	.video-button,
+	.audio-button {
+		background-color: var(--yellow_green);
+		color: var(--light_orange);
+		border: none;
+		border-radius: 0.5rem;
+		padding: 0.5rem 1rem;
+		margin: 0.5rem;
+	}
+
+	.end-call button {
+		background-color: var(--off_red);
+		color: var(--light_orange);
+		border: none;
+		border-radius: 0.5rem;
+		padding: 0.5rem 1rem;
+		margin: 0.5rem;
+	}
+
+	.start-button {
+		background-color: var(--yellow_green);
+		color: var(--light_orange);
+		border: none;
+		border-radius: 0.5rem;
+		padding: 0.5rem 1rem;
+		margin: 0.5rem;
+
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.start-button p {
+		margin-left: 10px;
+	}
+
+	.end-call .icon,
+	.video-button .mdi,
+	.audio-button .mdi {
+		color: var(--light_orange);
+		font-size: 1.5rem;
+	}
+
+	.giant-icon {
+		position: absolute;
+		font-size: 10rem;
+		color: var(--light_orange);
+		display: flex;
+		justify-content: column; /* Center icon horizontally */
+		align-items: center; /* Center icon vertically */
+		height: calc(100vh - 90px); /* Adjust height to fit the screen minus header */
+		right: 39%;
+	}
+	.username {
+		position: absolute;
+		font-size: 2rem;
+		bottom: 25%;
+		text-align: center;
+		right: 22%;
+		/* left: 50%; */
+	}
+</style>

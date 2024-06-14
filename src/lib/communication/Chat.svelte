@@ -5,6 +5,7 @@
 	import { authStore } from '$lib/store/store.js';
 	import { authHandlers } from '$lib/store/store.js';
 	import { get } from 'svelte/store';
+	import { goto } from '$app/navigation';
 
 	export let id;
 
@@ -28,12 +29,13 @@
 		}
 	});
 
+	let otherUid;
 	async function fetchOtherUser() {
 		if (!id) return;
 
 		const chatRef = doc(db, 'chats', id);
 		const chatSnap = await getDoc(chatRef);
-		const otherUid = chatSnap.data()?.users.find((user) => user !== uid);
+		otherUid = chatSnap.data()?.users.find((user) => user !== uid);
 		if (otherUid) {
 			const otherUserRef = doc(db, 'users', otherUid);
 			const otherUserSnap = await getDoc(otherUserRef);
@@ -73,12 +75,21 @@
 			unsubscribeChat();
 		}
 	});
+
+	function handleCall() {
+		console.log('Call button clicked');
+		goto(`/app/call/${otherUid}`);
+	}
 </script>
 
 <div class="chatContainer">
 	<div class="chatHeader">
 		<img src={pfp} alt="" class="imgContainer" />
 		<h1>{name}</h1>
+		<button class="call-button" on:click={handleCall}>
+			<span class="material-symbols--call icon"></span>
+			Calls
+		</button>
 	</div>
 
 	<div class="chatContent">
@@ -100,6 +111,15 @@
 </div>
 
 <style>
+	.call-button {
+		background-color: var(--yellow_green);
+		border-radius: 8px;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		padding: 8px;
+		margin-left: auto; /* Pushes the button to the right */
+	}
 	.myChat,
 	.otherChat {
 		width: 350px;
