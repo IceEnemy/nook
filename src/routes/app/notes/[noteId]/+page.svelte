@@ -1,5 +1,5 @@
 <script>
-	import RichTextEditor from '$lib/RichTextEditor.svelte';
+	import RichTextEditor from '$lib/NoteAccess/RichTextEditor.svelte';
 	import { page } from '$app/stores';
 	import { authStore } from '$lib/store/store';
 	import { doc, getDoc, onSnapshot } from 'firebase/firestore';

@@ -1,5 +1,5 @@
 <script>
-	import Timer from '$lib/Timer.svelte';
+	import Timer from '$lib/timer/Timer.svelte';
 	import { authStore } from '$lib/store/store.js';
 	import { doc, addDoc, collection, setDoc, getDoc, getDocs } from 'firebase/firestore';
 	import { db, auth } from '$lib/firebase/firebase.js';

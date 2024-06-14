@@ -1,5 +1,5 @@
 <script>
-	import Flashcards from '$lib/Flashcards.svelte';
+	import Flashcards from '$lib/Flashcard/Flashcards.svelte';
 	import { page } from '$app/stores';
 	$: flashcardId = $page.params.flashcardId;
 </script>

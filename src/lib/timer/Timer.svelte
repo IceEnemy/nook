@@ -1,7 +1,7 @@
 <script>
     import { onMount } from 'svelte';
     import { writable } from 'svelte/store';
-    import CircularProgress from '$lib/CircularProgress.svelte';
+    import CircularProgress from '$lib/timer/CircularProgress.svelte';
 
     import {doc, addDoc, collection, setDoc, getDoc} from 'firebase/firestore';
     import {db, auth} from '$lib/firebase/firebase.js';

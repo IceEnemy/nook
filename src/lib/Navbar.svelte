@@ -38,7 +38,6 @@
 	$: username = $authStore.data?.username || 'Loading..';
 	$: profilePic = $authStore.data?.profilePic || 'https://via.placeholder.com/150';
 
-	let recentlyContacted = ['Alice', 'Bob', 'Charlie'];
 	let unsubscribe;
 
 	const navOption1 = [
@@ -60,9 +59,13 @@
 	}
 
 	let isToolsBarOpen = false;
+	let isCallBarOpen = false;
 
 	function toggleToolsBar() {
 		isToolsBarOpen = !isToolsBarOpen;
+	}
+	function toggleCallBar() {
+		isCallBarOpen = !isCallBarOpen;
 	}
 
 	$: trackName = $currentTrack !== null ? songArr[$currentTrack].name : 'No Track Playing';
