@@ -32,55 +32,55 @@ const songArr = [
     path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
     thumbnail: "../src/lib/assets/tapeImg.png"
   },
-  {
-    name: "Chillhop Essentials",
-    author: "Chillhop Music",
-    duration: "3:30",
-    path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
-    thumbnail: "../src/lib/assets/tapeImg.png"
-  },
-  {
-    name: "Lofi Study Beats",
-    author: "Beats Bakery",
-    duration: "2:45",
-    path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
-    thumbnail: "../src/lib/assets/tapeImg.png"
-  },
-  {
-    name: "Relaxing Lofi",
-    author: "LoFi Cloud",
-    duration: "4:10",
-    path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
-    thumbnail: "../src/lib/assets/tapeImg.png"
-  },
-  {
-    name: "LoFi Chill Mix",
-    author: "Chillout Lounge",
-    duration: "3:50",
-    path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
-    thumbnail: "../src/lib/assets/tapeImg.png"
-  },
-  {
-    name: "Lofi Dreams",
-    author: "Dreamy Vibes",
-    duration: "2:30",
-    path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
-    thumbnail: "../src/lib/assets/tapeImg.png"
-  },
-  {
-    name: "Night LoFi",
-    author: "Nocturnal Beats",
-    duration: "3:15",
-    path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
-    thumbnail: "../src/lib/assets/tapeImg.png"
-  },
-  {
-    name: "LoFi Beats to Relax",
-    author: "Relaxation Station",
-    duration: "2:20",
-    path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
-    thumbnail: "../src/lib/assets/tapeImg.png"
-  }
+  // {
+  //   name: "Chillhop Essentials",
+  //   author: "Chillhop Music",
+  //   duration: "3:30",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // },
+  // {
+  //   name: "Lofi Study Beats",
+  //   author: "Beats Bakery",
+  //   duration: "2:45",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // },
+  // {
+  //   name: "Relaxing Lofi",
+  //   author: "LoFi Cloud",
+  //   duration: "4:10",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // },
+  // {
+  //   name: "LoFi Chill Mix",
+  //   author: "Chillout Lounge",
+  //   duration: "3:50",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // },
+  // {
+  //   name: "Lofi Dreams",
+  //   author: "Dreamy Vibes",
+  //   duration: "2:30",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // },
+  // {
+  //   name: "Night LoFi",
+  //   author: "Nocturnal Beats",
+  //   duration: "3:15",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // },
+  // {
+  //   name: "LoFi Beats to Relax",
+  //   author: "Relaxation Station",
+  //   duration: "2:20",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // }
 ];
 
 const updateProgress = (index) => {
