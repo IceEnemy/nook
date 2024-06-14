@@ -88,11 +88,8 @@
 				eventArr = await fillArrays(docSnap);
 				console.log('eventArr', eventArr);
 
-				if (Array.isArray(options.events)) {
-					options.events = options.events.concat(eventArr);
-				} else {
-					options.events = eventArr;
-				}
+				options.events = eventArr;
+
 				dataGot = true;
 
 				console.log('Event Data loaded and arrays filled');
@@ -227,7 +224,7 @@
 
 		return newEvent;
 	}
-	
+
 	function handleDropdown(event) {
 		// console.log('Event:', event);
 		// showDropdown = true;
@@ -288,8 +285,9 @@
 	}
 </script>
 
-<Calendar {plugins} {options} />
-
+<body>
+	<Calendar {plugins} {options} />
+</body>
 {#if showModal}
 	<div class="popup-form">
 		<div class="popup-content">
@@ -330,6 +328,9 @@
 {/if}
 
 <style>
+	body {
+		overflow: hidden;
+	}
 	.popup-form {
 		display: block;
 		position: fixed;

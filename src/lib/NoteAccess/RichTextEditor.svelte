@@ -7,7 +7,7 @@
 	import 'firebase/compat/database';
 	import { page } from '$app/stores';
 	import { goto } from '$app/navigation';
-	import { updateFlashcardStore } from './store/flashcard';
+	import { updateFlashcardStore } from '../store/flashcard';
 	import Modal from '$lib/Flashcard/Modal.svelte';
 
 	export let noteId = '';

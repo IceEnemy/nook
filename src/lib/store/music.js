@@ -11,27 +11,76 @@ export const volume = writable(0.2); // Default volume at 20%
 let audioElements = {};
 
 const songArr = [
-  {
-    name: "Ciudades LoFi",
-    author: "RAME - Syncopation Station",
-    duration: "1:59",
-    path: "../src/lib/assets/ciudades-lo-fi-music-produced-by-rame-syncopation-station-198728.mp3",
-    thumbnail: "../src/lib/assets/cicImg.png"
-  },
-  {
-    name: "Deep LoFi Vibes",
-    author: "Xethrocc",
-    duration: "3:18",
-    path: "../src/lib/assets/deep-lofi-vibes-205062.mp3",
-    thumbnail: "../src/lib/assets/deepImg.png"
-  },
-  {
-    name: "LoFi Hip-Hop - Coffee",
-    author: "LFC Records",
-    duration: "2:04",
-    path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
-    thumbnail: "../src/lib/assets/tapeImg.png"
-  }
+  // {
+  //   name: "Ciudades LoFi",
+  //   author: "RAME - Syncopation Station",
+  //   duration: "1:59",
+  //   path: "../src/lib/assets/ciudades-lo-fi-music-produced-by-rame-syncopation-station-198728.mp3",
+  //   thumbnail: "../src/lib/assets/cicImg.png"
+  // },
+  // {
+  //   name: "Deep LoFi Vibes",
+  //   author: "Xethrocc",
+  //   duration: "3:18",
+  //   path: "../src/lib/assets/deep-lofi-vibes-205062.mp3",
+  //   thumbnail: "../src/lib/assets/deepImg.png"
+  // },
+  // {
+  //   name: "LoFi Hip-Hop - Coffee",
+  //   author: "LFC Records",
+  //   duration: "2:04",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // }
+  // {
+  //   name: "Chillhop Essentials",
+  //   author: "Chillhop Music",
+  //   duration: "3:30",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // },
+  // {
+  //   name: "Lofi Study Beats",
+  //   author: "Beats Bakery",
+  //   duration: "2:45",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // },
+  // {
+  //   name: "Relaxing Lofi",
+  //   author: "LoFi Cloud",
+  //   duration: "4:10",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // },
+  // {
+  //   name: "LoFi Chill Mix",
+  //   author: "Chillout Lounge",
+  //   duration: "3:50",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // },
+  // {
+  //   name: "Lofi Dreams",
+  //   author: "Dreamy Vibes",
+  //   duration: "2:30",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // },
+  // {
+  //   name: "Night LoFi",
+  //   author: "Nocturnal Beats",
+  //   duration: "3:15",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // },
+  // {
+  //   name: "LoFi Beats to Relax",
+  //   author: "Relaxation Station",
+  //   duration: "2:20",
+  //   path: "../src/lib/assets/lofi-hip-hop-background-music-coffee-and-tapes-211148.mp3",
+  //   thumbnail: "../src/lib/assets/tapeImg.png"
+  // }
 ];
 
 const updateProgress = (index) => {

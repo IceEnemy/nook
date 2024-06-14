@@ -579,7 +579,9 @@
 		{/if}
 
 		<main
-			class={$page.url.pathname.startsWith('/app/music') || $page.url.pathname.startsWith('/app/contacts')
+			class={$page.url.pathname.startsWith('/app/music') ||
+			$page.url.pathname.startsWith('/app/contacts') ||
+			$page.url.pathname.startsWith('/app/call')
 				? 'main noPadding'
 				: $page.url.pathname.startsWith('/app/notes/')
 					? 'main noPadding'

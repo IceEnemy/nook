@@ -1,5 +1,5 @@
 <script>
-    import NotePreview from '$lib/noteNav.svelte';
+    import NotePreview from '$lib/NoteAccess/noteNav.svelte';
 
     export let expanded = false;
     export let name;
@@ -38,10 +38,6 @@
 		cursor: pointer;
 		border: none;
 		margin: 0;
-	}
-
-	.expanded {
-		/* background-image: url(/tutorial/icons/folder-open.svg); */
 	}
 
 	ul {

@@ -1,7 +1,7 @@
 <script>
     // import {onMount, getContext} from 'svelte';
     import {authHandlers, authStore, updateNoteStore} from '$lib/store/store';
-    import Folder from '$lib/Folder.svelte';
+    import Folder from '$lib/NoteAccess/Folder.svelte';
     import FileView from '$lib/NoteAccess/FileView.svelte';
     // import {auth}  from '$lib/firebase/firebase.js';
 

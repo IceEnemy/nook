@@ -6,7 +6,7 @@
 	import { onMount, onDestroy } from 'svelte';
 	import { authStore, updateNoteStore } from '$lib/store/store.js';
 	import Authenticate from '$lib/Authenticate.svelte';
-	import NoteNav from '$lib/noteNav.svelte';
+	import NoteNav from '$lib/NoteAccess/noteNav.svelte';
 	import { get } from 'svelte/store';
 	import { fade, scale } from 'svelte/transition';
 
