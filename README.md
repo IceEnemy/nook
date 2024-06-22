@@ -1,38 +1,48 @@
-# create-svelte
 
-Everything you need to build a Svelte project, powered by [`create-svelte`](https://github.com/sveltejs/kit/tree/main/packages/create-svelte).
+## How to Clone the repository
 
-## Creating a project
-
-If you're seeing this, you've probably already done this step. Congrats!
+make sure you have svelte and node in your workstation!
 
 ```bash
-# create a new project in the current directory
-npm create svelte@latest
-
-# create a new project in my-app
-npm create svelte@latest my-app
+git clone https://github.com/IceEnemy/nook.git
 ```
 
-## Developing
+after cloning the project, make sure to install all dependencies!
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+```bash
+cd project-directory
+
+npm install
+```
+
+## Testing the application
+
+right now, it has been tested on the dev build only, so
 
 ```bash
 npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
 ```
 
-## Building
-
-To create a production version of your app:
+if you encounter any routing errors, restart the server by typing
 
 ```bash
-npm run build
+r
 ```
 
-You can preview the production build with `npm run preview`.
+when the application is running
 
-> To deploy your app, you may need to install an [adapter](https://kit.svelte.dev/docs/adapters) for your target environment.
+## .env file
+
+in your .env file, ensure that you have these private firebase and openai keys:
+
+```bash
+VITE_API_KEY
+VITE_AUTH_DOMAIN
+VITE_PROJECT_ID
+VITE_STORAGE_BUCKET
+VITE_MESSAGING_SENDER_ID
+VITE_APP_ID
+VITE_MEASUREMENT_ID
+VITE_DATABASE_URL
+VITE_OPENAI_API_KEY
+```
